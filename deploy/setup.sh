@@ -83,8 +83,8 @@ ensure_selfsigned() {
   openssl req -x509 -nodes -newkey rsa:2048 -days 825 \
     -keyout "${dir}/privkey.pem" \
     -out "${dir}/fullchain.pem" \
-    -subj "/CN=defaultstack.online" \
-    -addext "subjectAltName=DNS:defaultstack.online,DNS:www.defaultstack.online,DNS:api.defaultstack.online,DNS:*.defaultstack.online"
+    -subj "/CN=defaultstackr.online" \
+    -addext "subjectAltName=DNS:defaultstackr.online,DNS:www.defaultstackr.online,DNS:api.defaultstackr.online,DNS:*.defaultstackr.online"
   chmod 644 "${dir}/fullchain.pem"
   chmod 600 "${dir}/privkey.pem"
   printf '%s\n' "Tijdelijk self-signed certificaat gezet. Vervang het met Let's Encrypt."
@@ -143,7 +143,7 @@ cert_note=""
 if [[ "$mode" == "direct" ]]; then
   cert_note="Let's Encrypt is nog niet actief. Nginx gebruikt het tijdelijke certificaat."
   if bash "${app_dir}/deploy/tls/obtain-http01.sh"; then
-    cert_note="Let's Encrypt staat aan voor defaultstack.online, www en api."
+    cert_note="Let's Encrypt staat aan voor defaultstackr.online, www en api."
   else
     printf '%s\n' "Certbot is niet gelukt. Dat is normaal als DNS nog niet naar deze server wijst."
     printf '%s\n' "Zet daarna: sudo bash deploy/tls/obtain-http01.sh"
@@ -177,9 +177,9 @@ else
   cat <<EOF
 
 Klaar (direct).
-  Site:  https://www.defaultstack.online  ->  127.0.0.1:3100
-  Apex:  https://defaultstack.online      ->  301 naar www
-  API:   https://api.defaultstack.online  ->  127.0.0.1:3000 (Express, dit script start hem niet)
+  Site:  https://www.defaultstackr.online  ->  127.0.0.1:3100
+  Apex:  https://defaultstackr.online      ->  301 naar www
+  API:   https://api.defaultstackr.online  ->  127.0.0.1:3000 (Express, dit script start hem niet)
   ${cert_note}
   Wildcard-TLS: sudo bash deploy/tls/obtain-wildcard-dns01.sh manual
   of, met DNS bij Cloudflare: sudo bash deploy/tls/obtain-wildcard-dns01.sh cloudflare

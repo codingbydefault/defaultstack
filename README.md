@@ -40,13 +40,13 @@ npm run dev
 To retrieve new commits: `git pull --ff-only`. After edits: `git add .`, `git commit -m "Explain change"`, and `git push origin main`. For bigger features, create a separate branch and PR. Never commit `.env` secrets.
 
 ## Vercel setup
-Import the repository as a Next.js project. Add `www.defaultstack.online` and `defaultstack.online`; use the www domain as canonical, redirect the apex domain. Use the exact DNS records provided by Vercel. Vercel stays available as a fallback if DNS is pointed back at those records.
+Import the repository as a Next.js project. Add `www.defaultstackr.online` and `defaultstackr.online`; use the www domain as canonical, redirect the apex domain. Use the exact DNS records provided by Vercel. Vercel stays available as a fallback if DNS is pointed back at those records.
 
 ## Self-hosting on Ubuntu
 The production path for the home server is documented in Dutch in [deploy/README.md](deploy/README.md). That machine is `192.168.2.69` on the LAN. Cloudflare Tunnel is the primary path: TLS ends at Cloudflare, and Nginx on `127.0.0.1:80` routes `www`, the apex redirect, `api`, and other subdomains. The Next.js app listens on `127.0.0.1:3100`. Ports 80 and 443 stay closed. `MODE=direct` is the alternative with public ports and Let's Encrypt.
 
 ## Backend integration
-The Ubuntu Express API responds on port 3000 locally. In production, Nginx reaches it at `api.defaultstack.online` and the process should bind to `127.0.0.1` only. A Windows SSH tunnel forwarding port 3001 is for local development only; a Vercel deployment cannot reach the private `localhost:3001` URL. Secure the backend before exposing any API publicly. Do not expose PostgreSQL to the internet.
+The Ubuntu Express API responds on port 3000 locally. In production, Nginx reaches it at `api.defaultstackr.online` and the process should bind to `127.0.0.1` only. A Windows SSH tunnel forwarding port 3001 is for local development only; a Vercel deployment cannot reach the private `localhost:3001` URL. Secure the backend before exposing any API publicly. Do not expose PostgreSQL to the internet.
 
 There is currently no real hosting, authentication, database management or billing on this site.
 ## Private database table editor
@@ -73,3 +73,12 @@ The backend code lives separately and is not modified by this repository.
 
 This is a record editor for two existing tables, not yet database provisioning,
 user authentication, app deployment, or a complete Supabase/Vercel replacement.
+
+## Eerste eigen app, migraties en RLS
+
+Zie [testdeployment](deploy/apps/README.md) voor de Docker-testapp met healthchecks
+en herstel bij een mislukte start. Zie [databasebasis](database/README.md) voor
+transactionele SQL-migraties en een RLS-voorbeeld met eigenaarisolatie.
+De serverconfiguraties gebruiken nu de aangekochte naam defaultstackr.online.
+De publieke Nginx-API-route geeft voorlopig 404: Express heeft nog geen login.
+Bestaande geïnstalleerde serverconfiguraties veranderen pas na expliciet toepassen.

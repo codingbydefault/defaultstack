@@ -51,8 +51,15 @@ if grep -qE "^${name}\\.defaultstack\\.online[[:space:]]" "$map_file"; then
   exit 1
 fi
 
-printf '%s\n' "${name}.defaultstack.online 127.0.0.1:${port};" >>"$map_file"
-nginx -t
-nginx -s reload
-printf '%s\n' "https://${name}.defaultstack.online wijst nu naar 127.0.0.1:${port}."
+backup="$(mktemp)"
+cp "$map_file" "$backup"
+trap 'rm -f "$backup"' EXIT
+printf '%s\n' "${name}.defaultstackr.online 127.0.0.1:${port};" >>"$map_file"
+if ! nginx -t || ! nginx -s reload; then
+  cp "$backup" "$map_file"
+  nginx -t && nginx -s reload || true
+  echo 'Routing failed; previous subdomain map restored.' >&2
+  exit 1
+fi
+printf '%s\n' "https://${name}.defaultstackr.online wijst nu naar 127.0.0.1:${port}."
 printf '%s\n' "Start die app alleen op 127.0.0.1, niet op 0.0.0.0."

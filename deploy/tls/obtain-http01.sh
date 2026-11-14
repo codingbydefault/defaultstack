@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Let's Encrypt via HTTP-01 voor apex, www en api. Dit is het pad voor maandag.
-# Een wildcard (*.defaultstack.online) kan HTTP-01 niet uitgeven; zie obtain-wildcard-dns01.sh.
+# Een wildcard (*.defaultstackr.online) kan HTTP-01 niet uitgeven; zie obtain-wildcard-dns01.sh.
 set -euo pipefail
 
 if [[ "$(id -u)" -ne 0 ]]; then
@@ -10,7 +10,7 @@ fi
 
 email="${CERTBOT_EMAIL:-codedbydefault@gmail.com}"
 webroot="/var/www/certbot"
-cert="/etc/letsencrypt/live/defaultstack.online/fullchain.pem"
+cert="/etc/letsencrypt/live/defaultstackr.online/fullchain.pem"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 install -d -m 755 "$webroot"
@@ -19,9 +19,9 @@ names_ok() {
   local san
   [[ -f "$cert" ]] || return 1
   san="$(openssl x509 -in "$cert" -noout -ext subjectAltName 2>/dev/null || true)"
-  [[ "$san" == *"DNS:defaultstack.online"* ]] || return 1
-  [[ "$san" == *"DNS:www.defaultstack.online"* ]] || return 1
-  [[ "$san" == *"DNS:api.defaultstack.online"* ]] || return 1
+  [[ "$san" == *"DNS:defaultstackr.online"* ]] || return 1
+  [[ "$san" == *"DNS:www.defaultstackr.online"* ]] || return 1
+  [[ "$san" == *"DNS:api.defaultstackr.online"* ]] || return 1
 }
 
 if names_ok; then
@@ -30,10 +30,10 @@ else
   args=(
     certbot certonly --webroot -w "$webroot"
     --non-interactive --agree-tos --email "$email"
-    --cert-name defaultstack.online
-    -d defaultstack.online
-    -d www.defaultstack.online
-    -d api.defaultstack.online
+    --cert-name defaultstackr.online
+    -d defaultstackr.online
+    -d www.defaultstackr.online
+    -d api.defaultstackr.online
   )
   if [[ -f "$cert" ]]; then
     args+=(--expand)
@@ -44,4 +44,4 @@ fi
 bash "${script_dir}/relink-certs.sh"
 nginx -t
 bash "${script_dir}/../nginx/reload.sh"
-printf '%s\n' "HTTP-01 certificaat staat klaar voor defaultstack.online, www en api."
+printf '%s\n' "HTTP-01 certificaat staat klaar voor defaultstackr.online, www en api."
