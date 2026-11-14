@@ -13,7 +13,7 @@ module.exports = {
     {
       name: "defaultstack-web",
       cwd: appDir,
-      script: path.join(appDir, ".next", "standalone", "server.js"),
+      script: path.join(appDir, "scripts", "start-standalone.mjs"),
       exec_mode: "fork",
       instances: 1,
       autorestart: true,
@@ -21,7 +21,7 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: "3100",
-        HOSTNAME: "127.0.0.1",
+        BIND_HOST: "127.0.0.1",
       },
     },
   ],

@@ -6,7 +6,8 @@
     "dev": "next dev -p 3100",
     "build": "next build && node scripts/prepare-standalone.mjs",
     "start": "node scripts/start-standalone.mjs",
-    "start:next": "next start -H 127.0.0.1 -p 3100"
+    "start:next": "next start -H 127.0.0.1 -p 3100",
+    "test": "node scripts/tests/platform.mjs"
   },
   "engines": {
     "node": ">=20"

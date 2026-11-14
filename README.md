@@ -82,3 +82,15 @@ transactionele SQL-migraties en een RLS-voorbeeld met eigenaarisolatie.
 De serverconfiguraties gebruiken nu de aangekochte naam defaultstackr.online.
 De publieke Nginx-API-route geeft voorlopig 404: Express heeft nog geen login.
 Bestaande geïnstalleerde serverconfiguraties veranderen pas na expliciet toepassen.
+
+## Workspace dashboard
+
+`/app` combines the DefaultStack overview, real application status, deployment
+command preparation, table editor, migration/RLS guidance and connection settings.
+The deployment dialog prepares an Ubuntu command; it does not execute Docker from
+the browser. Read-only metadata is exported with `node deploy/apps/export-status.mjs`.
+Set `DEFAULTSTACK_STATE_DIR` in `.env.local` and restart Next.js. Never give the
+web process Docker group membership. Without a snapshot the dashboard shows an
+honest disconnected state. Snapshots older than two minutes are marked stale.
+The deploy script exports automatically after success; periodic refresh on the
+server is not configured yet. GitHub integration and account auth remain pending.

@@ -28,7 +28,9 @@ localhostpoort, stopt pas daarna de vorige versie en start de nieuwe op poort
 3200. Na een mislukte start/healthcheck wordt de vorige container teruggezet.
 Er is een korte onderbreking bij promotie; dit is nog geen zero-downtime deploy.
 De vorige container en images blijven bewaard. Ruim die pas na verificatie op.
-Dezelfde opdracht deployt opnieuw. Eén deployment tegelijk wordt afgedwongen.
+Dezelfde opdracht deployt opnieuw. Ook bij SIGINT/SIGTERM tijdens promotie
+probeert de EXIT-handler de vorige container te herstellen. SIGKILL of stroomuitval
+kan niet worden opgevangen; inspecteer na zo’n onderbreking de containers. Eén deployment tegelijk wordt afgedwongen.
 
 Runtime: niet-root UID 1000, read-only filesystem, beperkte CPU/RAM/processen,
 geen hostmounts, geen Docker-socket, begrensde logs. De app luistert intern op
@@ -67,3 +69,23 @@ De productie-app bindt standaard op 127.0.0.1:3100. Gebruik Nginx of SSH-forward
 om die te bereiken. De healthcheck is /healthz; die controleert alleen het
 webproces, niet PostgreSQL. Laat ENABLE_LOCAL_DATABASE_EDITOR=false op publieke
 hosting. Start Express afzonderlijk; deze repo bevat de backendcode niet.
+
+## Servercontrole en dashboardstatus
+
+```bash
+bash deploy/apps/doctor.sh
+node deploy/apps/export-status.mjs
+```
+
+Succesvolle deployments exporteren nu automatisch een snapshot naar
+~/.local/state/defaultstack/status.json. Configureer DEFAULTSTACK_STATE_DIR in
+de frontend .env.local en herstart Next.js. De UI markeert een snapshot ouder
+dan twee minuten als verouderd; exporteer opnieuw om actuele containerstatus
+te zien. De snapshot bevat alleen naam, image, poort, status en tijd, geen
+container-environment of secrets. Het dashboard krijgt geen Dockerrechten.
+
+De Vercel-frontend kan het lokale bestand op Ubuntu niet lezen. Daar blijft de
+serverstatus losgekoppeld totdat een beveiligde API-verbinding beschikbaar is.
+De DNS-koppeling van defaultstackr.cloud aan Vercel staat los van de eerdere
+Ubuntu-tunneltemplates voor defaultstackr.online. Pas geen tunnelconfig toe
+voordat vaststaat welk domein voor de thuisserver wordt gebruikt.
