@@ -94,3 +94,12 @@ web process Docker group membership. Without a snapshot the dashboard shows an
 honest disconnected state. Snapshots older than two minutes are marked stale.
 The deploy script exports automatically after success; periodic refresh on the
 server is not configured yet. GitHub integration and account auth remain pending.
+
+## Wildcard apps, buildlogs en analytics
+
+Volg [de wildcardhandleiding](deploy/router/README.md). Deze flow werkt naast
+het bestaande hello-subdomein en laat de hoofdwebsite op Vercel staan. Nieuwe
+builds bewaren output; het private dashboard krijgt een Build logs-pagina.
+Analytics tonen routerverzoeken en echte Docker-resources uit de laatste export.
+Publieke HTTPS-verificatie is apart van de lokale containerstatus. De Cloudflare
+wildcardroute en Ubuntu-router moeten eenmalig handmatig worden ingesteld.

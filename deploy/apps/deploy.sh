@@ -9,7 +9,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [[ "$port" =~ ^[0-9]{4}$ ]] && (( port >= 3200 && port <= 3299 )) || { echo 'Use a port from 3200 to 3299.' >&2; exit 1; }
 [[ "$name" != *-previous && "$name" != *-check-* ]] || { echo "Name suffix reserved for deployment recovery." >&2; exit 1; }
 [[ -f "$source_dir/Dockerfile" ]] || { echo 'Source needs a Dockerfile and /healthz endpoint.' >&2; exit 1; }
-for command in docker curl flock; do command -v "$command" >/dev/null || { echo "Missing: $command" >&2; exit 1; }; done
+for command in docker curl flock node; do command -v "$command" >/dev/null || { echo "Missing: $command" >&2; exit 1; }; done
 docker info >/dev/null
 if [[ "$(docker info --format '{{.MemoryLimit}}')" != true || "$(docker info --format '{{.PidsLimit}}')" != true ]]; then
   echo 'WARNING: Docker cannot enforce memory/process limits on this host. Trusted private tests only.' >&2
@@ -22,13 +22,19 @@ container="defaultstack-app-$name"
 previous="$container-previous"
 candidate="$container-check-$$"
 image="defaultstack/$name:$(date -u +%Y%m%d%H%M%S)-$$"
+build_id="$name-$(date -u +%Y%m%d%H%M%S)-$$"
+state_dir="${DEFAULTSTACK_STATE_DIR:-$HOME/.local/state/defaultstack}"
+(umask 077; mkdir -p "$state_dir/builds")
+node "$script_dir/record-build.mjs" "$build_id" "$name" building "$image"
 options=(--memory=256m --memory-swap=256m --cpus=0.5 --pids-limit=128 --read-only --tmpfs /tmp:rw,noexec,nosuid,size=32m --cap-drop=ALL --security-opt=no-new-privileges --user=1000:1000 --log-opt max-size=10m --log-opt max-file=3)
 cleanup() { docker rm -f "$candidate" >/dev/null 2>&1 || true; }
+phase=build
 success=false
 promotion_started=false
 had_previous=false
 finish() {
   local result=$?
+  local rollback_failed=false
   trap - EXIT INT TERM
   cleanup
   if ! $success && $promotion_started; then
@@ -36,15 +42,24 @@ finish() {
     if $had_previous; then
       if docker container inspect "$previous" >/dev/null 2>&1; then
         docker rm -f "$container" >/dev/null 2>&1 || true
-        docker rename "$previous" "$container" || return 1
+        docker rename "$previous" "$container" || rollback_failed=true
       fi
-      docker start "$container" >/dev/null || return 1
-      health "http://127.0.0.1:$port" || { echo 'Previous app needs attention. Inspect Docker logs.' >&2; return 1; }
-      echo 'Previous app restored.' >&2
+      if ! $rollback_failed; then docker start "$container" >/dev/null || rollback_failed=true; fi
+      if ! $rollback_failed; then health "http://127.0.0.1:$port" || rollback_failed=true; fi
+      if $rollback_failed; then
+        echo 'Previous app needs attention. Inspect Docker logs.' >&2
+        result=1
+      else
+        echo 'Previous app restored.' >&2
+      fi
     else
       docker rm -f "$container" >/dev/null 2>&1 || true
     fi
   fi
+  local build_status=failed
+  if $success; then build_status=ready; elif $promotion_started && $had_previous && ! $rollback_failed; then build_status=rolled-back; fi
+  printf '\n[DefaultStackr] Outcome: %s; last stage: %s\n' "$build_status" "$phase" >>"$state_dir/builds/$build_id.log"
+  node "$script_dir/record-build.mjs" "$build_id" "$name" "$build_status" "$image" || echo 'Could not save build result.' >&2
   return "$result"
 }
 trap finish EXIT
@@ -59,11 +74,14 @@ health() {
   return 1
 }
 # Build context must exclude secrets using .dockerignore. No host folders or Docker socket are mounted.
-docker build --tag "$image" "$source_dir"
+docker build --progress=plain --tag "$image" "$source_dir" 2>&1 | node "$script_dir/capture-build.mjs" "$state_dir/builds/$build_id.log"
+phase=candidate-start
 docker run -d --init --label io.defaultstack.managed=true --name "$candidate" "${options[@]}" -p 127.0.0.1::8080 "$image" >/dev/null
 candidate_port="$(docker inspect --format '{{(index (index .NetworkSettings.Ports "8080/tcp") 0).HostPort}}' "$candidate")"
+phase=candidate-health
 health "http://127.0.0.1:$candidate_port" || { echo 'Candidate failed health check; current app unchanged.' >&2; exit 1; }
 cleanup
+phase=promotion
 if docker container inspect "$container" >/dev/null 2>&1; then
   old_image="$(docker inspect --format '{{.Config.Image}}' "$container")"
   [[ "$old_image" == "defaultstack/$name:"* ]] || { echo 'Existing container is not owned by this app; refusing replacement.' >&2; exit 1; }

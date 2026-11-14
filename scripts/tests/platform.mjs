@@ -7,7 +7,7 @@ const directory = await mkdtemp(path.join(os.tmpdir(), 'defaultstack-test-'));
 const port = 3197;
 const base = `http://127.0.0.1:${port}`;
 const server = spawn(process.execPath, ['scripts/start-standalone.mjs'], {
-  env: { ...process.env, NODE_ENV: 'production', PORT: String(port), BIND_HOST: '127.0.0.1', DEFAULTSTACK_STATE_DIR: directory, ENABLE_LOCAL_DATABASE_EDITOR: 'false' }, stdio: ['ignore', 'ignore', 'pipe'],
+  env: { ...process.env, NODE_ENV: 'production', PORT: String(port), BIND_HOST: '127.0.0.1', DEFAULTSTACK_STATE_DIR: directory, ENABLE_LOCAL_DATABASE_EDITOR: 'false', ENABLE_LOCAL_BUILD_LOGS: 'false' }, stdio: ['ignore', 'ignore', 'pipe'],
 });
 let errors = '';
 server.stderr.on('data', chunk => { errors += chunk; });
@@ -28,16 +28,20 @@ try {
   let response = await fetch(`${base}/api/platform`);
   assert.match(response.headers.get('cache-control'), /no-store/);
   assert.equal((await response.json()).connected, false);
-  const fixture = { generatedAt: new Date().toISOString(), secret: 'never expose', deployments: [{ name: 'hello', image: 'defaultstack/hello:test', state: 'running', health: 'healthy', port: 3200, created: new Date().toISOString(), secret: 'never expose' }] };
+  const fixture = { generatedAt: new Date().toISOString(), secret: 'never expose', deployments: [{ name: 'hello', image: 'defaultstack/hello:test', state: 'running', health: 'healthy', port: 3200, created: new Date().toISOString(), secret: 'never expose', publication: { url: 'https://hello.defaultstackr.cloud', status: 'ready', checkedAt: new Date().toISOString() }, resources: { cpu: '0.25%', memory: '10MiB / 256MiB' } }], analytics: { available: true, requests: 5, errors: 1, averageMs: 40, buckets: [], secret: 'never expose' } };
   await writeFile(path.join(directory, 'status.json'), JSON.stringify(fixture));
   const actual = await (await fetch(`${base}/api/platform`)).json();
-  assert.equal(actual.connected, true); assert.equal(actual.stale, false); assert.equal(actual.deployments[0].name, 'hello'); assert(!JSON.stringify(actual).includes('never expose'));
+  assert.equal(actual.connected, true); assert.equal(actual.stale, false); assert.equal(actual.deployments[0].name, 'hello'); assert.equal(actual.deployments[0].publication.status, 'ready'); assert.equal(actual.analytics.requests, 5); assert.equal(actual.deployments[0].resources.cpu, '0.25%'); assert(!JSON.stringify(actual).includes('never expose'));
+  fixture.deployments[0].publication.checkedAt = new Date(Date.now() - 180000).toISOString();
+  await writeFile(path.join(directory, 'status.json'), JSON.stringify(fixture));
+  assert.equal((await (await fetch(`${base}/api/platform`)).json()).deployments[0].publication.status, 'unverified');
   fixture.generatedAt = new Date(Date.now() - 180000).toISOString();
   await writeFile(path.join(directory, 'status.json'), JSON.stringify(fixture));
   assert.equal((await (await fetch(`${base}/api/platform`)).json()).stale, true);
   await writeFile(path.join(directory, 'status.json'), '{broken');
   assert.equal((await (await fetch(`${base}/api/platform`)).json()).connected, false);
   assert.equal((await fetch(`${base}/api/data/users`)).status, 503);
+  assert.equal((await fetch(`${base}/api/builds`)).status, 503);
   console.log('PASS: production app, health, missing/valid/stale/corrupt snapshots, metadata whitelist, database disabled');
 } finally {
   server.kill('SIGTERM');

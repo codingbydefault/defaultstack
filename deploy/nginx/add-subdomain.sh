@@ -46,7 +46,7 @@ if [[ ! -f "$map_file" ]]; then
   exit 1
 fi
 
-if grep -qE "^${name}\\.defaultstackr\\.online[[:space:]]" "$map_file"; then
+if grep -qE "^${name}\\.defaultstackr\\.cloud[[:space:]]" "$map_file"; then
   printf '%s\n' "Subdomein ${name} staat al in ${map_file}." >&2
   exit 1
 fi
