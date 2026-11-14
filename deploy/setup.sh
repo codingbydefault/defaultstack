@@ -75,7 +75,7 @@ EOF
 }
 
 ensure_selfsigned() {
-  local dir="/etc/nginx/defaultstack/selfsigned"
+  local dir="/etc/nginx/defaultstackr/selfsigned"
   install -d -m 750 "$dir"
   if [[ -f "${dir}/fullchain.pem" && -f "${dir}/privkey.pem" ]]; then
     return

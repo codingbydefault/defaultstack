@@ -11,7 +11,7 @@ const appDir = path.resolve(__dirname, "..");
 module.exports = {
   apps: [
     {
-      name: "defaultstack-web",
+      name: "defaultstackr-web",
       cwd: appDir,
       script: path.join(appDir, "scripts", "start-standalone.mjs"),
       exec_mode: "fork",

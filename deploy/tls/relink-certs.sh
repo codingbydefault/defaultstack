@@ -9,7 +9,7 @@ if [[ "$(id -u)" -ne 0 ]]; then
   exit 1
 fi
 
-nginx_dir="/etc/nginx/defaultstack"
+nginx_dir="/etc/nginx/defaultstackr"
 le_apex="/etc/letsencrypt/live/defaultstackr.online"
 le_wild="/etc/letsencrypt/live/defaultstackr.online-wildcard"
 origin="${nginx_dir}/origin"

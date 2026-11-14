@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installeer cloudflared, maak tunnel "defaultstack" en start de systemd-service.
+# Installeer cloudflared, maak tunnel "defaultstackr" en start de systemd-service.
 # Draai dit op de thuisserver, nadat de Cloudflare-zone Active is:
 #   sudo bash deploy/cloudflared/setup-tunnel.sh
 #
@@ -89,7 +89,7 @@ if not isinstance(data, list):
 for item in data:
     if not isinstance(item, dict):
         continue
-    if item.get("name") == "defaultstack" and not item.get("deleted_at"):
+    if item.get("name") == "defaultstackr" and not item.get("deleted_at"):
         print(item.get("id") or "")
         break
 PY
@@ -102,7 +102,7 @@ rm -f "$list_out" "$list_err"
 
 if [[ -z "$tunnel_id" ]]; then
   create_out="$(mktemp)"
-  if ! cloudflared tunnel create defaultstack >"$create_out" 2>&1; then
+  if ! cloudflared tunnel create defaultstackr >"$create_out" 2>&1; then
     printf '%s\n' "Tunnel aanmaken mislukt. Credentials worden niet getoond." >&2
     redact_log "$create_out" >&2
     rm -f "$create_out"
@@ -113,7 +113,7 @@ if [[ -z "$tunnel_id" ]]; then
 fi
 
 if [[ ! "$tunnel_id" =~ ^[0-9a-fA-F-]{36}$ ]]; then
-  printf '%s\n' "Geen tunnel-id voor defaultstack." >&2
+  printf '%s\n' "Geen tunnel-id voor defaultstackr." >&2
   exit 1
 fi
 
@@ -134,7 +134,7 @@ route_dns() {
   local hostname="$1"
   local route_out
   route_out="$(mktemp)"
-  if ! cloudflared tunnel route dns --overwrite-dns defaultstack "$hostname" >"$route_out" 2>&1; then
+  if ! cloudflared tunnel route dns --overwrite-dns defaultstackr "$hostname" >"$route_out" 2>&1; then
     printf 'DNS-route voor %s mislukt.\n' "$hostname" >&2
     redact_log "$route_out" >&2
     rm -f "$route_out"
@@ -160,6 +160,6 @@ else
   printf '%s\n' "Geen systemd. Start met: cloudflared --config /etc/cloudflared/config.yml tunnel run"
 fi
 
-printf '%s\n' "Tunnel defaultstack wijst naar Nginx op http://127.0.0.1:80."
+printf '%s\n' "Tunnel defaultstackr wijst naar Nginx op http://127.0.0.1:80."
 printf '%s\n' "Zet in Cloudflare bij SSL/TLS de modus op Full."
 printf '%s\n' "cert.pem en het credentials-JSON blijven in ${cred_dir} en horen niet in git."

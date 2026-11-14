@@ -47,8 +47,8 @@ allow_ssh_ports() {
 }
 
 mode="${MODE:-}"
-if [[ -z "$mode" && -f /etc/nginx/defaultstack/mode ]]; then
-  mode="$(tr -d '[:space:]' </etc/nginx/defaultstack/mode)"
+if [[ -z "$mode" && -f /etc/nginx/defaultstackr/mode ]]; then
+  mode="$(tr -d '[:space:]' </etc/nginx/defaultstackr/mode)"
 fi
 if [[ -z "$mode" ]]; then
   mode="tunnel"

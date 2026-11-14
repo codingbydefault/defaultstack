@@ -5,13 +5,13 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: "./" },
-  title: "DefaultStack — Build. Deploy. Scale.",
+  title: "DefaultStackr — Build. Deploy. Scale.",
   description:
-    "DefaultStack by CodedByDefault is developing a unified application and database platform.",
+    "DefaultStackr by CodedByDefault is developing a unified application and database platform.",
   openGraph: {
-    title: "DefaultStack by CodedByDefault",
+    title: "DefaultStackr by CodedByDefault",
     description: "Building an integrated cloud development platform. Follow our progress.",
-    siteName: "DefaultStack",
+    siteName: "DefaultStackr",
     url: SITE_URL,
     type: "website",
   },

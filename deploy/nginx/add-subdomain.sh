@@ -40,13 +40,13 @@ case "$port" in
     ;;
 esac
 
-map_file="/etc/nginx/defaultstack/subdomains.map"
+map_file="/etc/nginx/defaultstackr/subdomains.map"
 if [[ ! -f "$map_file" ]]; then
   printf '%s\n' "Mapbestand ontbreekt. Draai eerst: sudo bash deploy/setup.sh" >&2
   exit 1
 fi
 
-if grep -qE "^${name}\\.defaultstack\\.online[[:space:]]" "$map_file"; then
+if grep -qE "^${name}\\.defaultstackr\\.online[[:space:]]" "$map_file"; then
   printf '%s\n' "Subdomein ${name} staat al in ${map_file}." >&2
   exit 1
 fi
@@ -57,7 +57,9 @@ trap 'rm -f "$backup"' EXIT
 printf '%s\n' "${name}.defaultstackr.online 127.0.0.1:${port};" >>"$map_file"
 if ! nginx -t || ! nginx -s reload; then
   cp "$backup" "$map_file"
-  nginx -t && nginx -s reload || true
+  if nginx -t; then
+    nginx -s reload || echo 'Herladen na herstel is mislukt.' >&2
+  fi
   echo 'Routing failed; previous subdomain map restored.' >&2
   exit 1
 fi

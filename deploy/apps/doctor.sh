@@ -3,7 +3,7 @@
 set -uo pipefail
 issues=0
 check() { if "$@" >/dev/null 2>&1; then return 0; else return 1; fi; }
-echo 'DefaultStack server check (no changes)'
+echo 'DefaultStackr server check (no changes)'
 for tool in git node npm docker curl flock; do
   if command -v "$tool" >/dev/null; then echo "OK: $tool installed"; else echo "MISSING: $tool"; issues=$((issues+1)); fi
 done

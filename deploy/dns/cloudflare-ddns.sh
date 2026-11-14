@@ -7,7 +7,7 @@
 #   sudo CF_ENV_FILE=/root/.secrets/cloudflare-ddns.env bash deploy/dns/cloudflare-ddns.sh
 #
 # Cron, elke vijf minuten:
-#   */5 * * * * root CF_ENV_FILE=/root/.secrets/cloudflare-ddns.env /var/www/defaultstack/deploy/dns/cloudflare-ddns.sh
+#   */5 * * * * root CF_ENV_FILE=/root/.secrets/cloudflare-ddns.env /var/www/defaultstackr/deploy/dns/cloudflare-ddns.sh
 set -euo pipefail
 
 if [[ -n "${CF_ENV_FILE:-}" ]]; then

@@ -1,4 +1,4 @@
-# DefaultStack thuis, via Cloudflare Tunnel
+# DefaultStackr thuis, via Cloudflare Tunnel
 
 De site draait op de Ubuntu-machine in huis, **LAN-adres 192.168.2.69**. Bezoekers komen binnen via Cloudflare. De router forwardt niets. Poort 80 en 443 op de server blijven dicht.
 
@@ -11,7 +11,7 @@ Cloudflare stopt TLS. De tunnel levert HTTP af bij Nginx op `127.0.0.1:80`. Ngin
 | `www.defaultstackr.online` | Next.js op `127.0.0.1:3100` |
 | `defaultstackr.online` | 301 naar `https://www.defaultstackr.online` |
 | `api.defaultstackr.online` | bestaande Express-API op `127.0.0.1:3000` |
-| `iets.defaultstackr.online` | de poort in `/etc/nginx/defaultstack/subdomains.map`, of een 404-pagina |
+| `iets.defaultstackr.online` | de poort in `/etc/nginx/defaultstackr/subdomains.map`, of een 404-pagina |
 
 Express en PostgreSQL start dit project niet. PostgreSQL blijft op localhost.
 
@@ -34,14 +34,14 @@ Staat SSH niet op poort 22, gebruik die poort in het ssh-commando en later `SSH_
 6. Clone en installeer de site. Nginx komt alleen op `127.0.0.1:80`. De firewall laat alleen SSH binnen.
 
 ```bash
-sudo mkdir -p /var/www/defaultstack
-sudo chown "$USER:$USER" /var/www/defaultstack
-git clone https://github.com/codingbydefault/defaultstack.git /var/www/defaultstack
-cd /var/www/defaultstack
+sudo mkdir -p /var/www/defaultstackr
+sudo chown "$USER:$USER" /var/www/defaultstackr
+git clone https://github.com/codingbydefault/defaultstack.git /var/www/defaultstackr
+cd /var/www/defaultstackr
 sudo bash deploy/setup.sh
 ```
 
-7. Start de tunnel. Het script opent een Cloudflare-login in de browser, maakt tunnel `defaultstack`, zet de DNS-records en installeert de systemd-service.
+7. Start de tunnel. Het script opent een Cloudflare-login in de browser, maakt tunnel `defaultstackr`, zet de DNS-records en installeert de systemd-service.
 
 ```bash
 sudo bash deploy/cloudflared/setup-tunnel.sh
@@ -74,7 +74,7 @@ Het gratis **Universal SSL** van Cloudflare dekt `defaultstackr.online` en één
 `deploy/cloudflared/setup-tunnel.sh`:
 
 - installeert `cloudflared` uit de apt-repo van Cloudflare
-- `cloudflared tunnel login` en tunnel `defaultstack`
+- `cloudflared tunnel login` en tunnel `defaultstackr`
 - DNS via `cloudflared tunnel route dns` voor de apex, `www`, `api` en `*.defaultstackr.online`
 - `cloudflared service install` zodat de tunnel na een reboot terugkomt
 
@@ -90,7 +90,7 @@ De `*`-route van de tunnel bestaat al. Universal SSL dekt de naam. Op de server 
 sudo bash deploy/nginx/add-subdomain.sh demo 3200
 ```
 
-Dat schrijft in `/etc/nginx/defaultstack/subdomains.map`:
+Dat schrijft in `/etc/nginx/defaultstackr/subdomains.map`:
 
 ```text
 demo.defaultstackr.online 127.0.0.1:3200;
@@ -108,9 +108,9 @@ Als de gewone gebruiker, in de clone:
 bash deploy/update.sh
 ```
 
-Dat is `git pull --ff-only`, `npm ci`, build, `pm2 reload`, en Nginx opnieuw laden in de modus die `setup.sh` heeft gekozen (`/etc/nginx/defaultstack/mode`). Express wordt niet meegenomen.
+Dat is `git pull --ff-only`, `npm ci`, build, `pm2 reload`, en Nginx opnieuw laden in de modus die `setup.sh` heeft gekozen (`/etc/nginx/defaultstackr/mode`). Express wordt niet meegenomen.
 
-Logs: `pm2 logs defaultstack-web` en `sudo journalctl -u cloudflared -n 50`.
+Logs: `pm2 logs defaultstackr-web` en `sudo journalctl -u cloudflared -n 50`.
 
 ## Alternatief: direct, zonder tunnel
 
@@ -160,7 +160,7 @@ Express hoort op `127.0.0.1:3000`. PM2 in dit project start alleen de Next-site.
 1. In Vercel blijft het project staan. www is het hoofddomein, de apex redirect naar www.
 2. Haal de tunnel-records weg (de CNAME’s naar `cfargotunnel.com` voor `@`, `www`, `api` en `*`). Zet de records die het Vercel-scherm nú toont. Staat de DNS nog bij Cloudflare, dan wijzig je ze daar. Wil je de nameservers terug naar de registrar, doe dat en gebruik de records van Vercel bij de registrar.
 3. `sudo systemctl stop cloudflared` en `sudo systemctl disable cloudflared`.
-4. Optioneel: `pm2 stop defaultstack-web`.
+4. Optioneel: `pm2 stop defaultstackr-web`.
 
 ## Bestanden
 
@@ -171,8 +171,8 @@ Express hoort op `127.0.0.1:3000`. PM2 in dit project start alleen de Next-site.
 | `deploy/cloudflared/config.yml` | tunnel-template naar Nginx op `127.0.0.1:80` |
 | `deploy/cloudflared/setup-tunnel.sh` | cloudflared, tunnel, DNS, systemd |
 | `deploy/nginx/tunnel.conf` | tunnel-Nginx: alleen `127.0.0.1:80` |
-| `deploy/nginx/defaultstack.conf` | directe modus, poort 80 en 443 |
-| `deploy/nginx/subdomains.map` | voorbeeld; de levende lijst staat in `/etc/nginx/defaultstack/` |
+| `deploy/nginx/defaultstackr.conf` | directe modus, poort 80 en 443 |
+| `deploy/nginx/subdomains.map` | voorbeeld; de levende lijst staat in `/etc/nginx/defaultstackr/` |
 | `deploy/nginx/add-subdomain.sh` | één subdomein |
 | `deploy/firewall/ufw.sh` | tunnel: alleen SSH; direct: SSH, 80 en 443 |
 | `deploy/ecosystem.config.cjs` | PM2 voor Next op poort 3100 |

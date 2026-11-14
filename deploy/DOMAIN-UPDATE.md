@@ -34,7 +34,7 @@ Voor bestaande Nginx/tunnel-configuratie:
 sudo bash deploy/sync-domain.sh
 ```
 
-Dit script werkt alleen bestaande DefaultStack-bestanden bij, bewaart originele
+Dit script werkt alleen bestaande DefaultStackr-bestanden bij, bewaart originele
 bestanden onder /var/backups en valideert voor herladen. Bij fouten zet het ze
 terug. Subdomeinregels en poorten blijven behouden. Een niet-bestaande tunnel
 wordt niet aangemaakt. systemd wordt verwacht voor herladen van actieve services.

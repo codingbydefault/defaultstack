@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Update only existing DefaultStack proxy files; no DNS, firewall or credentials changes.
+# Update only existing DefaultStackr proxy files; no DNS, firewall or credentials changes.
 set -Eeuo pipefail
 [[ "$(id -u)" -eq 0 ]] || { echo 'Usage: sudo bash deploy/sync-domain.sh' >&2; exit 1; }
 command -v python3 >/dev/null || { echo 'python3 is required.' >&2; exit 1; }
 backup="$(mktemp -d /var/backups/defaultstack-domain-XXXXXXXX)"
 chmod 700 "$backup"
-files=(/etc/nginx/sites-available/defaultstack.conf /etc/nginx/defaultstack/wildcard.conf /etc/nginx/defaultstack/subdomains.map /etc/nginx/defaultstack/proxy-params.conf /etc/nginx/defaultstack/proxy-params-tunnel.conf /etc/cloudflared/config.yml)
+files=(/etc/nginx/sites-available/defaultstack.conf /etc/nginx/sites-available/defaultstackr.conf /etc/nginx/defaultstack/wildcard.conf /etc/nginx/defaultstackr/wildcard.conf /etc/nginx/defaultstack/subdomains.map /etc/nginx/defaultstackr/subdomains.map /etc/nginx/defaultstack/proxy-params.conf /etc/nginx/defaultstackr/proxy-params.conf /etc/nginx/defaultstack/proxy-params-tunnel.conf /etc/nginx/defaultstackr/proxy-params-tunnel.conf /etc/cloudflared/config.yml)
 changed=()
 nginx_changed=false
 tunnel_changed=false

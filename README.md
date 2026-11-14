@@ -1,4 +1,4 @@
-# DefaultStack by CodedByDefault
+# DefaultStackr by CodedByDefault
 
 A Next.js Cloud Gradient landing page with a separate platform preview.
 
@@ -85,7 +85,7 @@ Bestaande geïnstalleerde serverconfiguraties veranderen pas na expliciet toepas
 
 ## Workspace dashboard
 
-`/app` combines the DefaultStack overview, real application status, deployment
+`/app` combines the DefaultStackr overview, real application status, deployment
 command preparation, table editor, migration/RLS guidance and connection settings.
 The deployment dialog prepares an Ubuntu command; it does not execute Docker from
 the browser. Read-only metadata is exported with `node deploy/apps/export-status.mjs`.
