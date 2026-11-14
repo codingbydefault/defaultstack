@@ -69,47 +69,122 @@ if [[ ! -s "${cred_dir}/cert.pem" ]]; then
 fi
 chmod 600 "${cred_dir}/cert.pem"
 
-list_out="$(mktemp)"
-list_err="$(mktemp)"
-tunnel_id=""
-if cloudflared tunnel list -o json >"$list_out" 2>"$list_err"; then
-  tunnel_id="$(python3 - "$list_out" <<'PY'
+# JSON-lijst, platte tabel, of `tunnel info`. Leeg als de naam ontbreekt.
+lookup_tunnel_id() {
+  local source="$1"
+  python3 - "$source" <<'PY'
 import json
+import re
 import sys
 
-try:
-    with open(sys.argv[1], encoding="utf-8") as handle:
-        data = json.load(handle)
-except json.JSONDecodeError:
-    sys.exit(0)
-if isinstance(data, dict):
-    data = data.get("result") or data.get("tunnels") or []
-if not isinstance(data, list):
-    sys.exit(0)
-for item in data:
-    if not isinstance(item, dict):
+uuid_re = re.compile(
+    r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+)
+text = open(sys.argv[1], encoding="utf-8", errors="replace").read()
+
+def from_obj(obj):
+    if isinstance(obj, dict):
+        name = obj.get("name") or obj.get("Name")
+        tunnel_id = obj.get("id") or obj.get("ID")
+        deleted = obj.get("deleted_at") or obj.get("deletedAt")
+        if name == "defaultstackr" and tunnel_id and not deleted:
+            return str(tunnel_id)
+        for key in ("result", "tunnels", "tunnel"):
+            if key in obj:
+                found = from_obj(obj[key])
+                if found:
+                    return found
+    elif isinstance(obj, list):
+        for item in obj:
+            found = from_obj(item)
+            if found:
+                return found
+    return ""
+
+found = ""
+decoder = json.JSONDecoder()
+for index, char in enumerate(text):
+    if char not in "{[":
         continue
-    if item.get("name") == "defaultstackr" and not item.get("deleted_at"):
-        print(item.get("id") or "")
+    try:
+        parsed, _ = decoder.raw_decode(text[index:])
+    except json.JSONDecodeError:
+        continue
+    found = from_obj(parsed)
+    if found:
         break
+
+if not found:
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and parts[1] == "defaultstackr" and uuid_re.fullmatch(parts[0]):
+            found = parts[0]
+            break
+        if re.search(r"\bdefaultstackr\b", line):
+            match = uuid_re.search(line)
+            if match:
+                found = match.group(0)
+                break
+
+if not found and re.search(r"\bdefaultstackr\b", text):
+    match = re.search(r"(?i)\bID\b[:\s|]+(" + uuid_re.pattern + ")", text)
+    if match:
+        found = match.group(1)
+
+if found:
+    print(found)
 PY
-)"
-else
-  printf '%s\n' "Tunnel-lijst ophalen mislukt." >&2
-  redact_log "$list_err" >&2
+}
+
+read_tunnel_id() {
+  local command_out="$1"
+  local command_err="$2"
+  shift 2
+  if "$@" >"$command_out" 2>"$command_err"; then
+    lookup_tunnel_id "$command_out"
+    return 0
+  fi
+  # info kan de id printen en toch een foutcode geven als er geen connector is.
+  cat "$command_err" >>"$command_out"
+  lookup_tunnel_id "$command_out"
+}
+
+tunnel_id=""
+list_out="$(mktemp)"
+list_err="$(mktemp)"
+tunnel_id="$(read_tunnel_id "$list_out" "$list_err" cloudflared tunnel list -o json || true)"
+if [[ -z "$tunnel_id" ]]; then
+  : >"$list_out"
+  tunnel_id="$(read_tunnel_id "$list_out" "$list_err" cloudflared tunnel list || true)"
+fi
+if [[ -z "$tunnel_id" ]]; then
+  : >"$list_out"
+  tunnel_id="$(read_tunnel_id "$list_out" "$list_err" cloudflared tunnel info defaultstackr -o json || true)"
+fi
+if [[ -z "$tunnel_id" ]]; then
+  : >"$list_out"
+  tunnel_id="$(read_tunnel_id "$list_out" "$list_err" cloudflared tunnel info defaultstackr || true)"
 fi
 rm -f "$list_out" "$list_err"
 
 if [[ -z "$tunnel_id" ]]; then
   create_out="$(mktemp)"
+  info_out="$(mktemp)"
+  info_err="$(mktemp)"
   if ! cloudflared tunnel create defaultstackr >"$create_out" 2>&1; then
-    printf '%s\n' "Tunnel aanmaken mislukt. Credentials worden niet getoond." >&2
-    redact_log "$create_out" >&2
-    rm -f "$create_out"
-    exit 1
+    if grep -qi 'already exists' "$create_out"; then
+      tunnel_id="$(read_tunnel_id "$info_out" "$info_err" cloudflared tunnel info defaultstackr || true)"
+    fi
+    if [[ -z "$tunnel_id" ]]; then
+      printf '%s\n' "Tunnel aanmaken mislukt. Credentials worden niet getoond." >&2
+      redact_log "$create_out" >&2
+      rm -f "$create_out" "$info_out" "$info_err"
+      exit 1
+    fi
+  else
+    tunnel_id="$(sed -n 's/.*with id \([0-9a-fA-F-]\{36\}\).*/\1/p' "$create_out" | head -n 1)"
   fi
-  tunnel_id="$(sed -n 's/.*with id \([0-9a-f-]\{36\}\).*/\1/p' "$create_out" | head -n 1)"
-  rm -f "$create_out"
+  rm -f "$create_out" "$info_out" "$info_err"
 fi
 
 if [[ ! "$tunnel_id" =~ ^[0-9a-fA-F-]{36}$ ]]; then
@@ -134,14 +209,31 @@ route_dns() {
   local hostname="$1"
   local route_out
   route_out="$(mktemp)"
-  if ! cloudflared tunnel route dns --overwrite-dns defaultstackr "$hostname" >"$route_out" 2>&1; then
-    printf 'DNS-route voor %s mislukt.\n' "$hostname" >&2
-    redact_log "$route_out" >&2
+  if cloudflared tunnel route dns --overwrite-dns defaultstackr "$hostname" >"$route_out" 2>&1; then
+    redact_log "$route_out"
     rm -f "$route_out"
-    exit 1
+    return 0
   fi
-  redact_log "$route_out"
+  if grep -q '1003' "$route_out"; then
+    printf 'DNS-route voor %s is niet gezet. Cloudflare-code 1003.\n' "$hostname" >&2
+    if [[ "$hostname" == "defaultstackr.cloud" ]]; then
+      cat <<'EOF' >&2
+De apex heeft meerdere A-records. Cloudflare vervangt die niet vanzelf.
+Open het Cloudflare-dashboard → DNS → Records voor defaultstackr.cloud.
+Verwijder daar alle A- en AAAA-records op de naam @ (defaultstackr.cloud).
+Een CNAME van @ naar deze tunnel mag blijven staan.
+www, api en * gaan hierna gewoon door. Draai dit script daarna opnieuw voor de apex.
+EOF
+    else
+      printf 'Verwijder in DNS → Records het extra A-, AAAA- of CNAME-record voor %s en draai het script opnieuw.\n' "$hostname" >&2
+    fi
+    rm -f "$route_out"
+    return 0
+  fi
+  printf 'DNS-route voor %s mislukt.\n' "$hostname" >&2
+  redact_log "$route_out" >&2
   rm -f "$route_out"
+  exit 1
 }
 
 route_dns "www.defaultstackr.cloud"
@@ -152,10 +244,33 @@ route_dns "*.defaultstackr.cloud"
 cloudflared --config /etc/cloudflared/config.yml tunnel ingress validate
 
 if [[ -d /run/systemd/system ]]; then
-  cloudflared --config /etc/cloudflared/config.yml service install
-  systemctl enable cloudflared
-  systemctl restart cloudflared
-  printf '%s\n' "systemd-service cloudflared is actief."
+  unit="/etc/systemd/system/cloudflared.service"
+  if [[ -f "$unit" ]]; then
+    if grep -q '/etc/cloudflared/config.yml' "$unit"; then
+      systemctl daemon-reload
+      systemctl enable cloudflared
+      systemctl restart cloudflared
+      printf '%s\n' "Bestaande cloudflared-service gebruikt al /etc/cloudflared/config.yml. Herstart."
+    else
+      cat <<'EOF' >&2
+Er staat al /etc/systemd/system/cloudflared.service, maar die gebruikt niet
+/etc/cloudflared/config.yml. Dat is meestal een oude dashboard-tunnel met een token.
+Die service is niet gewijzigd.
+
+Kies één weg en draai dit script daarna opnieuw:
+  sudo cloudflared service uninstall
+of verwijder de oude tunnel in Cloudflare (Zero Trust → Tunnels) en daarna:
+  sudo rm /etc/systemd/system/cloudflared.service
+  sudo systemctl daemon-reload
+EOF
+      exit 1
+    fi
+  else
+    cloudflared --config /etc/cloudflared/config.yml service install
+    systemctl enable cloudflared
+    systemctl restart cloudflared
+    printf '%s\n' "systemd-service cloudflared is actief."
+  fi
 else
   printf '%s\n' "Geen systemd. Start met: cloudflared --config /etc/cloudflared/config.yml tunnel run"
 fi
