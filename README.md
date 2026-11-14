@@ -49,3 +49,27 @@ The production path for the home server is documented in Dutch in [deploy/README
 The Ubuntu Express API responds on port 3000 locally. In production, Nginx reaches it at `api.defaultstack.online` and the process should bind to `127.0.0.1` only. A Windows SSH tunnel forwarding port 3001 is for local development only; a Vercel deployment cannot reach the private `localhost:3001` URL. Secure the backend before exposing any API publicly. Do not expose PostgreSQL to the internet.
 
 There is currently no real hosting, authentication, database management or billing on this site.
+## Private database table editor
+
+`/app` now provides Users and Products tables, search over loaded records, insert,
+edit, and confirmed deletion. Data goes through Next.js server routes to the
+existing Express API; PostgreSQL credentials never enter the browser.
+
+On the home Ubuntu machine, copy `.env.example` to `.env.local`, set
+`DATABASE_API_URL=http://127.0.0.1:3000` and set
+`ENABLE_LOCAL_DATABASE_EDITOR=true` **only for private network use**. Restart
+Next.js after changing environment variables. Keep this option false on public
+hosting: the editor is disabled by default because account authentication and
+project permissions have not been implemented. CORS is not authentication.
+
+Start Express separately, then run this frontend on port 3100. The API must
+implement GET/POST `/api/users` and `/api/products`, and PATCH/DELETE
+`/api/users/:id` and `/api/products/:id`. IDs currently must be numeric. Reads
+currently load the entire table; pagination is a later backend change.
+
+In Express, load `require('dotenv').config()` **before** requiring the database
+configuration, so the pool receives environment variables during initialization.
+The backend code lives separately and is not modified by this repository.
+
+This is a record editor for two existing tables, not yet database provisioning,
+user authentication, app deployment, or a complete Supabase/Vercel replacement.
