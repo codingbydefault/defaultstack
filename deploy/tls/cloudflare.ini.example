@@ -1,0 +1,5 @@
+# Kopieer naar /root/.secrets/certbot/cloudflare.ini en voer daarna uit:
+#   sudo chmod 600 /root/.secrets/certbot/cloudflare.ini
+# Maak in Cloudflare een API-token met Zone / DNS / Edit, alleen voor deze zone.
+# Zet hier nooit een echt token in git.
+dns_cloudflare_api_token = REPLACE_ME

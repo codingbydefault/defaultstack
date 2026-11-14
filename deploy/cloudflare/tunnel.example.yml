@@ -1,0 +1,29 @@
+# Voorbeeld voor cloudflared. Kopieer naar /etc/cloudflared/config.yml
+# en vul tunnel-id en credentials-file in. Zie deploy/README.md.
+#
+# Bezoekers praten HTTPS met Cloudflare. De tunnel praat op de server met Nginx.
+# noTLSVerify hoort bij het tijdelijke self-signed certificaat. Haal die regel
+# weg zodra Nginx een Cloudflare-origin-certificaat of Let's Encrypt gebruikt
+# en zet dan originServerName op www.defaultstack.online.
+
+tunnel: TUNNEL_ID
+credentials-file: /etc/cloudflared/TUNNEL_ID.json
+
+ingress:
+  - hostname: defaultstack.online
+    service: https://127.0.0.1:443
+    originRequest:
+      noTLSVerify: true
+  - hostname: www.defaultstack.online
+    service: https://127.0.0.1:443
+    originRequest:
+      noTLSVerify: true
+  - hostname: api.defaultstack.online
+    service: https://127.0.0.1:443
+    originRequest:
+      noTLSVerify: true
+  - hostname: "*.defaultstack.online"
+    service: https://127.0.0.1:443
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404
