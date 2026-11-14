@@ -10,8 +10,8 @@ if [[ "$(id -u)" -ne 0 ]]; then
 fi
 
 nginx_dir="/etc/nginx/defaultstackr"
-le_apex="/etc/letsencrypt/live/defaultstackr.online"
-le_wild="/etc/letsencrypt/live/defaultstackr.online-wildcard"
+le_apex="/etc/letsencrypt/live/defaultstackr.cloud"
+le_wild="/etc/letsencrypt/live/defaultstackr.cloud-wildcard"
 origin="${nginx_dir}/origin"
 selfsigned="${nginx_dir}/selfsigned"
 

@@ -1,7 +1,7 @@
-# Alles op defaultstackr.online
+# Alles op defaultstackr.cloud
 
 De frontendmetadata en workspace gebruiken één domeinbron in src/lib/site.ts.
-De Nginx-, tunnel-, DNS- en certificaattemplates gebruiken defaultstackr.online.
+De Nginx-, tunnel-, DNS- en certificaattemplates gebruiken defaultstackr.cloud.
 Een Git-update wijzigt geen reeds geïnstalleerde bestanden onder /etc.
 
 ## Op Ubuntu via je bestaande SSH-terminal
@@ -39,7 +39,7 @@ bestanden onder /var/backups en valideert voor herladen. Bij fouten zet het ze
 terug. Subdomeinregels en poorten blijven behouden. Een niet-bestaande tunnel
 wordt niet aangemaakt. systemd wordt verwacht voor herladen van actieve services.
 Een wijziging van een tunnel-hostname maakt nog geen DNS-route in Cloudflare.
-Controleer dat de zone defaultstackr.online Active is en maak dan de routes via
+Controleer dat de zone defaultstackr.cloud Active is en maak dan de routes via
 de tunnelsetup. Nieuwe certificaten zijn nodig bij directe HTTPS-hosting.
 Het script wijzigt geen private keys, firewall, backendcode of database-inhoud.
 

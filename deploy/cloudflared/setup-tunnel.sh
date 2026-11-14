@@ -144,10 +144,10 @@ route_dns() {
   rm -f "$route_out"
 }
 
-route_dns "www.defaultstackr.online"
-route_dns "defaultstackr.online"
-route_dns "api.defaultstackr.online"
-route_dns "*.defaultstackr.online"
+route_dns "www.defaultstackr.cloud"
+route_dns "defaultstackr.cloud"
+route_dns "api.defaultstackr.cloud"
+route_dns "*.defaultstackr.cloud"
 
 cloudflared --config /etc/cloudflared/config.yml tunnel ingress validate
 

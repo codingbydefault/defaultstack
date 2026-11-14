@@ -49,13 +49,13 @@ Open http://localhost:3200. Laat de SSH-verbinding open.
 
 ## 4. Optioneel publiceren
 
-Pas nadat de Cloudflare-zone en tunnel voor **defaultstackr.online** werken:
+Pas nadat de Cloudflare-zone en tunnel voor **defaultstackr.cloud** werken:
 
 ```bash
 sudo bash deploy/nginx/add-subdomain.sh hello 3200
 ```
 
-Open https://hello.defaultstackr.online. Deze helper verwacht dat Nginx al is
+Open https://hello.defaultstackr.cloud. Deze helper verwacht dat Nginx al is
 geïnstalleerd en dat de wildcard-DNS/tunnelroute bestaat. De configuratiebestanden
 in Git bijwerken verandert de draaiende Nginx/tunnelconfig niet automatisch.
 Maak geen publieke route naar de onbeveiligde Express-API of database-editor.
@@ -86,5 +86,5 @@ container-environment of secrets. Het dashboard krijgt geen Dockerrechten.
 
 De Vercel-frontend kan het lokale bestand op Ubuntu niet lezen. Daar blijft de
 serverstatus losgekoppeld totdat een beveiligde API-verbinding beschikbaar is.
-De canonische domeinnaam is defaultstackr.online. Vercel kan tijdelijk de
+De canonische domeinnaam is defaultstackr.cloud. Vercel kan tijdelijk de
 frontend hosten; het lezen van Ubuntu-status blijft daar losgekoppeld.

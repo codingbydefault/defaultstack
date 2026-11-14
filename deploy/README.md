@@ -2,16 +2,16 @@
 
 De site draait op de Ubuntu-machine in huis, **LAN-adres 192.168.2.69**. Bezoekers komen binnen via Cloudflare. De router forwardt niets. Poort 80 en 443 op de server blijven dicht.
 
-De canonische site is `https://www.defaultstackr.online`. `https://defaultstackr.online` stuurt met een 301 door naar www.
+De canonische site is `https://www.defaultstackr.cloud`. `https://defaultstackr.cloud` stuurt met een 301 door naar www.
 
 Cloudflare stopt TLS. De tunnel levert HTTP af bij Nginx op `127.0.0.1:80`. Nginx kiest daarna de bestemming:
 
 | Verkeer | Gaat naar |
 | --- | --- |
-| `www.defaultstackr.online` | Next.js op `127.0.0.1:3100` |
-| `defaultstackr.online` | 301 naar `https://www.defaultstackr.online` |
-| `api.defaultstackr.online` | bestaande Express-API op `127.0.0.1:3000` |
-| `iets.defaultstackr.online` | de poort in `/etc/nginx/defaultstackr/subdomains.map`, of een 404-pagina |
+| `www.defaultstackr.cloud` | Next.js op `127.0.0.1:3100` |
+| `defaultstackr.cloud` | 301 naar `https://www.defaultstackr.cloud` |
+| `api.defaultstackr.cloud` | bestaande Express-API op `127.0.0.1:3000` |
+| `iets.defaultstackr.cloud` | de poort in `/etc/nginx/defaultstackr/subdomains.map`, of een 404-pagina |
 
 Express en PostgreSQL start dit project niet. PostgreSQL blijft op localhost.
 
@@ -20,7 +20,7 @@ Express en PostgreSQL start dit project niet. PostgreSQL blijft op localhost.
 ## Wat jij doet
 
 1. Maak een gratis account op [Cloudflare](https://dash.cloudflare.com/sign-up).
-2. Kies **Add a site** en vul `defaultstackr.online` in. Kies het gratis plan.
+2. Kies **Add a site** en vul `defaultstackr.cloud` in. Kies het gratis plan.
 3. Cloudflare toont **twee nameservers** voor deze zone. Zet bij je registrar precies die twee, in plaats van de nameservers van de registrar. Kopieer ze uit het scherm. Gebruik niet de nameservers van een ander account.
 4. Wacht tot de zone in het Cloudflare-overzicht op **Active** staat. Dat kan een paar minuten tot een paar uur duren. Ga pas daarna verder.
 5. Op de server (vanaf een computer in huis):
@@ -52,13 +52,13 @@ sudo bash deploy/cloudflared/setup-tunnel.sh
 9. Controleer vanaf je telefoon (niet alleen via wifi, als de router geen loopback doet):
 
 ```bash
-curl -sI https://www.defaultstackr.online | head -n 8
-curl -sI https://defaultstackr.online | head -n 8
+curl -sI https://www.defaultstackr.cloud | head -n 8
+curl -sI https://defaultstackr.cloud | head -n 8
 ```
 
-www geeft 200. De apex geeft `301` met `Location: https://www.defaultstackr.online/`.
+www geeft 200. De apex geeft `301` met `Location: https://www.defaultstackr.cloud/`.
 
-Het gratis **Universal SSL** van Cloudflare dekt `defaultstackr.online` en één niveau wildcard, `*.defaultstackr.online`. Je hoeft op de server geen Certbot te draaien voor die namen. Een naam als `a.b.defaultstackr.online` valt er niet onder.
+Het gratis **Universal SSL** van Cloudflare dekt `defaultstackr.cloud` en één niveau wildcard, `*.defaultstackr.cloud`. Je hoeft op de server geen Certbot te draaien voor die namen. Een naam als `a.b.defaultstackr.cloud` valt er niet onder.
 
 `git pull` op de server moet later zonder wachtwoordprompt kunnen.
 
@@ -75,7 +75,7 @@ Het gratis **Universal SSL** van Cloudflare dekt `defaultstackr.online` en één
 
 - installeert `cloudflared` uit de apt-repo van Cloudflare
 - `cloudflared tunnel login` en tunnel `defaultstackr`
-- DNS via `cloudflared tunnel route dns` voor de apex, `www`, `api` en `*.defaultstackr.online`
+- DNS via `cloudflared tunnel route dns` voor de apex, `www`, `api` en `*.defaultstackr.cloud`
 - `cloudflared service install` zodat de tunnel na een reboot terugkomt
 
 `cert.pem` en het credentials-JSON blijven in `/root/.cloudflared/`. Die bestanden komen niet in git en het script print ze niet. Kopieer ze niet naar de repository.
@@ -93,7 +93,7 @@ sudo bash deploy/nginx/add-subdomain.sh demo 3200
 Dat schrijft in `/etc/nginx/defaultstackr/subdomains.map`:
 
 ```text
-demo.defaultstackr.online 127.0.0.1:3200;
+demo.defaultstackr.cloud 127.0.0.1:3200;
 ```
 
 De puntkomma hoort erbij. De app luistert alleen op `127.0.0.1`. `www` en `api` horen niet in dit bestand. Een onbekende naam krijgt de 404-pagina.
@@ -137,9 +137,9 @@ DNS in die modus, `SERVER_IP` is het publieke IPv4-adres:
 | Naam | Type | Waarde |
 | --- | --- | --- |
 | `@` | A | `SERVER_IP` |
-| `www` | CNAME | `defaultstackr.online` |
-| `api` | CNAME | `defaultstackr.online` |
-| `*` | CNAME | `defaultstackr.online` |
+| `www` | CNAME | `defaultstackr.cloud` |
+| `api` | CNAME | `defaultstackr.cloud` |
+| `*` | CNAME | `defaultstackr.cloud` |
 
 Geen AAAA, tenzij IPv6 echt werkt. Een thuis-IP dat verandert houd je bij met de DDNS van de registrar, of met `deploy/dns/cloudflare-ddns.sh` als de DNS bij Cloudflare staat en je geen tunnel gebruikt. Zet dan geen tunnel-CNAME en dit A-record door elkaar.
 

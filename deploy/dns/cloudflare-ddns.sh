@@ -20,7 +20,7 @@ fi
 : "${CF_API_TOKEN:?Zet CF_API_TOKEN in de omgeving of in CF_ENV_FILE.}"
 : "${CF_ZONE_ID:?Zet CF_ZONE_ID in de omgeving of in CF_ENV_FILE.}"
 
-CF_RECORD_NAME="${CF_RECORD_NAME:-defaultstackr.online}"
+CF_RECORD_NAME="${CF_RECORD_NAME:-defaultstackr.cloud}"
 CF_PROXIED="${CF_PROXIED:-false}"
 
 if [[ ! "$CF_RECORD_NAME" =~ ^[A-Za-z0-9.*-]+$ ]]; then

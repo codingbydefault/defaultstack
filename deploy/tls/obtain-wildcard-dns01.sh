@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wildcard-certificaat via DNS-01. HTTP-01 kan *.defaultstackr.online niet uitgeven.
+# Wildcard-certificaat via DNS-01. HTTP-01 kan *.defaultstackr.cloud niet uitgeven.
 #
 #   sudo bash deploy/tls/obtain-wildcard-dns01.sh manual
 #   sudo bash deploy/tls/obtain-wildcard-dns01.sh cloudflare
@@ -24,9 +24,9 @@ case "$mode" in
   manual)
     certbot certonly --manual --preferred-challenges dns \
       --agree-tos --email "$email" \
-      --cert-name defaultstackr.online-wildcard \
-      -d defaultstackr.online \
-      -d '*.defaultstackr.online'
+      --cert-name defaultstackr.cloud-wildcard \
+      -d defaultstackr.cloud \
+      -d '*.defaultstackr.cloud'
     ;;
   cloudflare)
     apt-get update
@@ -40,10 +40,10 @@ case "$mode" in
       --dns-cloudflare-credentials "$cred" \
       --dns-cloudflare-propagation-seconds 60 \
       --non-interactive --agree-tos --email "$email" \
-      --cert-name defaultstackr.online-wildcard \
+      --cert-name defaultstackr.cloud-wildcard \
       --keep-until-expiring \
-      -d defaultstackr.online \
-      -d '*.defaultstackr.online'
+      -d defaultstackr.cloud \
+      -d '*.defaultstackr.cloud'
     ;;
   *)
     printf '%s\n' "Gebruik: sudo bash deploy/tls/obtain-wildcard-dns01.sh manual|cloudflare" >&2

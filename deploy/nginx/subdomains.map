@@ -1,11 +1,11 @@
-# Actieve subdomeinen voor *.defaultstackr.online
+# Actieve subdomeinen voor *.defaultstackr.cloud
 # Eén regel toevoegen, daarna: sudo nginx -t && sudo nginx -s reload
 #
 # Formaat (de puntkomma hoort erbij):
-# naam.defaultstackr.online 127.0.0.1:POORT;
+# naam.defaultstackr.cloud 127.0.0.1:POORT;
 #
 # De app op die poort mag alleen op 127.0.0.1 luisteren.
 # www en api horen hier niet: die hebben een eigen serverblok.
 #
 # Voorbeeld (niet actief zolang de regel met # begint):
-# demo.defaultstackr.online 127.0.0.1:3200;
+# demo.defaultstackr.cloud 127.0.0.1:3200;

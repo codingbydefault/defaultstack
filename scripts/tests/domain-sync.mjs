@@ -19,12 +19,12 @@ try {
   const tunnel = path.join(root, 'etc/cloudflared/config.yml');
   const original = 'server_name www.defaultstack.online;\nproxy_pass http://127.0.0.1:3100;\n';
   await writeFile(nginx, original);
-  await writeFile(tunnel, 'hostname: www.defaultstackr.cloud\ncredentials-file: /private/unchanged.json\n');
+  await writeFile(tunnel, 'hostname: www.defaultstackr.online\ncredentials-file: /private/unchanged.json\n');
   const env = { ...process.env, PATH: `${root}/bin:${process.env.PATH}` };
   const run = extra => execFileSync('bash', [script], { env: { ...env, ...extra }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
   run();
-  assert.equal(await readFile(nginx, 'utf8'), original.replace('defaultstack.online', 'defaultstackr.online'));
-  assert((await readFile(tunnel, 'utf8')).includes('/private/unchanged.json'));
+  assert.equal(await readFile(nginx, 'utf8'), original.replace('defaultstack.online', 'defaultstackr.cloud'));
+  assert.equal(await readFile(tunnel, 'utf8'), 'hostname: www.defaultstackr.cloud\ncredentials-file: /private/unchanged.json\n');
   assert(run().includes('Updated files: 0'), 'idempotent second run');
   await writeFile(nginx, original);
   assert.throws(() => run({ FAIL_NGINX: '1' }));

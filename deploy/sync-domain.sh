@@ -15,7 +15,9 @@ restore() {
   trap - EXIT INT TERM
   if ! $committed; then
     for file in "${changed[@]}"; do cp -p "$backup$file" "$file"; done
-    if $nginx_changed; then nginx -t && systemctl reload nginx || true; fi
+    if $nginx_changed && nginx -t; then
+      systemctl reload nginx || true
+    fi
     if $tunnel_changed && systemctl is-active --quiet cloudflared; then systemctl restart cloudflared || true; fi
     echo "Update failed or interrupted. Original files restored from $backup" >&2
   fi
@@ -26,7 +28,7 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 for file in "${files[@]}"; do
   [[ -f "$file" ]] || continue
-  if grep -Eq 'defaultstack\.online|defaultstackr\.cloud' "$file"; then
+  if grep -Eq 'defaultstack\.online|defaultstackr\.online' "$file"; then
     # Copy resolved contents, preserving permissions; credentials are never printed.
     mkdir -p "$backup$(dirname "$file")"
     cp -pL "$file" "$backup$file"
@@ -35,7 +37,7 @@ for file in "${files[@]}"; do
 import pathlib, re, sys
 p = pathlib.Path(sys.argv[1])
 s = p.read_text()
-s = re.sub(r'(?<![a-zA-Z0-9_-])(?:defaultstack\.online|defaultstackr\.cloud)(?![a-zA-Z0-9_.-])', 'defaultstackr.online', s)
+s = re.sub(r'(?<![a-zA-Z0-9_-])(?:defaultstack\.online|defaultstackr\.online)(?![a-zA-Z0-9_.-])', 'defaultstackr.cloud', s)
 p.write_text(s)
 PY
     case "$file" in /etc/nginx/*) nginx_changed=true;; /etc/cloudflared/*) tunnel_changed=true;; esac
@@ -55,6 +57,6 @@ if $tunnel_changed; then
   else echo 'NOTICE: cloudflared is not active. Configuration updated; service not started.'; fi
 fi
 committed=true
-printf 'Canonical domain: defaultstackr.online\nUpdated files: %s\nBackup: %s\n' "${#changed[@]}" "$backup"
+printf 'Canonical domain: defaultstackr.cloud\nUpdated files: %s\nBackup: %s\n' "${#changed[@]}" "$backup"
 echo 'DNS/Cloudflare zone routes and TLS certificates are not changed by this script.'
 echo 'If the old configuration used HTTPS origin certificates, issue certificates for the new domain before public use.'
