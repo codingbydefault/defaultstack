@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Alleen SSH, HTTP en HTTPS van buitenaf. PostgreSQL blijft op localhost.
+# Tunnel (standaard): alleen SSH. Direct: SSH, 80 en 443.
+# PostgreSQL blijft op localhost. MODE=tunnel of MODE=direct.
 set -euo pipefail
 
 if [[ "$(id -u)" -ne 0 ]]; then
@@ -45,11 +46,33 @@ allow_ssh_ports() {
   fi
 }
 
+mode="${MODE:-}"
+if [[ -z "$mode" && -f /etc/nginx/defaultstack/mode ]]; then
+  mode="$(tr -d '[:space:]' </etc/nginx/defaultstack/mode)"
+fi
+if [[ -z "$mode" ]]; then
+  mode="tunnel"
+fi
+case "$mode" in
+  tunnel|direct) ;;
+  *)
+    printf 'MODE moet tunnel of direct zijn, niet %s.\n' "$mode" >&2
+    exit 1
+    ;;
+esac
+
 ufw default deny incoming
 ufw default allow outgoing
 allow_ssh_ports
-ufw allow 80/tcp comment 'HTTP'
-ufw allow 443/tcp comment 'HTTPS'
+if [[ "$mode" == "direct" ]]; then
+  ufw allow 80/tcp comment 'HTTP'
+  ufw allow 443/tcp comment 'HTTPS'
+else
+  ufw --force delete allow 80/tcp >/dev/null 2>&1 || true
+  ufw --force delete allow 443/tcp >/dev/null 2>&1 || true
+  ufw --force delete allow 80/tcp >/dev/null 2>&1 || true
+  ufw --force delete allow 443/tcp >/dev/null 2>&1 || true
+fi
 ufw deny 5432/tcp comment 'PostgreSQL alleen lokaal'
 ufw deny 3000/tcp comment 'Express alleen via Nginx'
 ufw deny 3100/tcp comment 'Next alleen via Nginx'
@@ -127,4 +150,8 @@ warn_local_only() {
 
 warn_local_only 3000 "Express"
 warn_local_only 3100 "Next.js"
-printf '%s\n' "Firewall staat aan: alleen 22, 80 en 443 binnen."
+if [[ "$mode" == "tunnel" ]]; then
+  printf '%s\n' "Firewall staat aan: alleen SSH. Poort 80 en 443 blijven dicht."
+else
+  printf '%s\n' "Firewall staat aan: alleen SSH, 80 en 443."
+fi

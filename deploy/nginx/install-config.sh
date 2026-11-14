@@ -16,6 +16,21 @@ backup_made=0
 install -d -m 755 "$nginx_dir" "${nginx_dir}/certs/wildcard" "${nginx_dir}/origin" "$prev"
 install -d -m 755 /var/www/certbot /var/www/defaultstack-errors
 
+mode="${MODE:-}"
+if [[ -z "$mode" && -f "${nginx_dir}/mode" ]]; then
+  mode="$(tr -d '[:space:]' <"${nginx_dir}/mode")"
+fi
+if [[ -z "$mode" ]]; then
+  mode="tunnel"
+fi
+case "$mode" in
+  tunnel|direct) ;;
+  *)
+    printf 'MODE moet tunnel of direct zijn, niet %s.\n' "$mode" >&2
+    exit 1
+    ;;
+esac
+
 save_prev() {
   local name="$1"
   local path="$2"
@@ -39,10 +54,15 @@ save_prev "wildcard.conf" "${nginx_dir}/wildcard.conf"
 save_prev "ssl-params.conf" "${nginx_dir}/ssl-params.conf"
 save_prev "proxy-params.conf" "${nginx_dir}/proxy-params.conf"
 
-install -m 644 "${script_dir}/defaultstack.conf" /etc/nginx/sites-available/defaultstack.conf
+if [[ "$mode" == "tunnel" ]]; then
+  install -m 644 "${script_dir}/tunnel.conf" /etc/nginx/sites-available/defaultstack.conf
+else
+  install -m 644 "${script_dir}/defaultstack.conf" /etc/nginx/sites-available/defaultstack.conf
+fi
 install -m 644 "${script_dir}/wildcard.conf" "${nginx_dir}/wildcard.conf"
 install -m 644 "${script_dir}/ssl-params.conf" "${nginx_dir}/ssl-params.conf"
 install -m 644 "${script_dir}/proxy-params.conf" "${nginx_dir}/proxy-params.conf"
+install -m 644 "${script_dir}/proxy-params-tunnel.conf" "${nginx_dir}/proxy-params-tunnel.conf"
 install -m 644 "${script_dir}/unknown-subdomain.html" /var/www/defaultstack-errors/unknown-subdomain.html
 ln -sfn /etc/nginx/sites-available/defaultstack.conf /etc/nginx/sites-enabled/defaultstack.conf
 rm -f /etc/nginx/sites-enabled/default
@@ -57,6 +77,9 @@ if ! nginx -t; then
   exit 1
 fi
 
-bash "${script_dir}/reload.sh"
+printf '%s\n' "$mode" >"${nginx_dir}/mode"
+chmod 644 "${nginx_dir}/mode"
 
-printf '%s\n' "Nginx-config is geladen."
+bash "${script_dir}/reload.sh" restart
+
+printf 'Nginx-config is geladen (modus %s).\n' "$mode"

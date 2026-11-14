@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Eerste installatie op Ubuntu 22.04 of 24.04. Opnieuw draaien is veilig.
+# Standaard is Cloudflare Tunnel: geen poort 80/443 naar buiten.
 #   sudo bash deploy/setup.sh
+# Direct op het publieke IP, met Let's Encrypt:
+#   sudo MODE=direct bash deploy/setup.sh
 set -euo pipefail
 
 if [[ "$(id -u)" -ne 0 ]]; then
@@ -26,6 +29,15 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 umask 022
+
+mode="${MODE:-tunnel}"
+case "$mode" in
+  tunnel|direct) ;;
+  *)
+    printf '%s\n' "MODE moet tunnel of direct zijn." >&2
+    exit 1
+    ;;
+esac
 
 apt_install() {
   apt-get install -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold "$@"
@@ -95,9 +107,13 @@ run_as_deploy() {
     "$@"
 }
 
-printf '%s\n' "Pakketten installeren."
+printf 'Pakketten installeren (modus %s).\n' "$mode"
 apt-get update
-apt_install ca-certificates curl gnupg git nginx certbot openssl iproute2 ufw python3
+packages=(ca-certificates curl gnupg git nginx openssl iproute2 ufw python3)
+if [[ "$mode" == "direct" ]]; then
+  packages+=(certbot)
+fi
+apt_install "${packages[@]}"
 
 install_node
 if ! command -v pm2 >/dev/null 2>&1; then
@@ -115,18 +131,23 @@ printf '%s\n' "Next.js bouwen in ${app_dir}."
 run_as_deploy npm --prefix "$app_dir" ci --include=dev
 run_as_deploy npm --prefix "$app_dir" run build
 
-allow_nginx_letsencrypt
-ensure_selfsigned
-write_renew_hook
-bash "${app_dir}/deploy/tls/relink-certs.sh"
-bash "${app_dir}/deploy/nginx/install-config.sh"
+if [[ "$mode" == "direct" ]]; then
+  allow_nginx_letsencrypt
+  ensure_selfsigned
+  write_renew_hook
+  bash "${app_dir}/deploy/tls/relink-certs.sh"
+fi
+MODE="$mode" bash "${app_dir}/deploy/nginx/install-config.sh"
 
-cert_note="Let's Encrypt is nog niet actief. Nginx gebruikt het tijdelijke certificaat."
-if bash "${app_dir}/deploy/tls/obtain-http01.sh"; then
-  cert_note="Let's Encrypt staat aan voor defaultstack.online, www en api."
-else
-  printf '%s\n' "Certbot is niet gelukt. Dat is normaal als DNS nog niet naar deze server wijst."
-  printf '%s\n' "Zet daarna: sudo bash deploy/tls/obtain-http01.sh"
+cert_note=""
+if [[ "$mode" == "direct" ]]; then
+  cert_note="Let's Encrypt is nog niet actief. Nginx gebruikt het tijdelijke certificaat."
+  if bash "${app_dir}/deploy/tls/obtain-http01.sh"; then
+    cert_note="Let's Encrypt staat aan voor defaultstack.online, www en api."
+  else
+    printf '%s\n' "Certbot is niet gelukt. Dat is normaal als DNS nog niet naar deze server wijst."
+    printf '%s\n' "Zet daarna: sudo bash deploy/tls/obtain-http01.sh"
+  fi
 fi
 
 printf '%s\n' "PM2 starten."
@@ -137,11 +158,25 @@ if ! env PATH="$PATH" pm2 startup systemd -u "$deploy_user" --hp "$user_home"; t
 fi
 
 printf '%s\n' "Firewall instellen."
-bash "${app_dir}/deploy/firewall/ufw.sh"
+MODE="$mode" bash "${app_dir}/deploy/firewall/ufw.sh"
 
-cat <<EOF
+if [[ "$mode" == "tunnel" ]]; then
+  cat <<EOF
 
-Klaar.
+Klaar (tunnel).
+  Nginx luistert alleen op 127.0.0.1:80 en doet de host-routing.
+  Next.js:  127.0.0.1:3100
+  Express:  127.0.0.1:3000 (dit script start hem niet)
+  Firewall: alleen SSH. Poort 80 en 443 blijven dicht.
+  Daarna, als de Cloudflare-zone Active is:
+    sudo bash deploy/cloudflared/setup-tunnel.sh
+  Zet in Cloudflare bij SSL/TLS de modus op Full.
+
+EOF
+else
+  cat <<EOF
+
+Klaar (direct).
   Site:  https://www.defaultstack.online  ->  127.0.0.1:3100
   Apex:  https://defaultstack.online      ->  301 naar www
   API:   https://api.defaultstack.online  ->  127.0.0.1:3000 (Express, dit script start hem niet)
@@ -151,3 +186,4 @@ Klaar.
   Subdomein: sudo bash deploy/nginx/add-subdomain.sh demo 3200
 
 EOF
+fi

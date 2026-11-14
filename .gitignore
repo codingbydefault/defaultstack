@@ -6,3 +6,6 @@ node_modules
 *.tsbuildinfo
 deploy/tls/cloudflare.ini
 deploy/dns/cloudflare-ddns.env
+.cloudflared/
+deploy/cloudflared/cert.pem
+deploy/cloudflared/*.json

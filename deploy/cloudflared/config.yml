@@ -1,0 +1,20 @@
+# Cloudflare Tunnel voor de thuisserver.
+# setup-tunnel.sh schrijft de echte kopie naar /etc/cloudflared/config.yml
+# en vult het tunnel-id in. Dit bestand bevat geen credentials en geen cert.pem.
+#
+# Nginx op 127.0.0.1:80 doet de host-routing, de apex-redirect en de subdomeinmap.
+# De eerste passende regel wint. De vangnet-regel hoort onderaan.
+
+tunnel: 00000000-0000-0000-0000-000000000000
+credentials-file: /root/.cloudflared/00000000-0000-0000-0000-000000000000.json
+
+ingress:
+  - hostname: www.defaultstack.online
+    service: http://127.0.0.1:80
+  - hostname: defaultstack.online
+    service: http://127.0.0.1:80
+  - hostname: api.defaultstack.online
+    service: http://127.0.0.1:80
+  - hostname: "*.defaultstack.online"
+    service: http://127.0.0.1:80
+  - service: http_status:404

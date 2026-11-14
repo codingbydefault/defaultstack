@@ -43,7 +43,7 @@ To retrieve new commits: `git pull --ff-only`. After edits: `git add .`, `git co
 Import the repository as a Next.js project. Add `www.defaultstack.online` and `defaultstack.online`; use the www domain as canonical, redirect the apex domain. Use the exact DNS records provided by Vercel. Vercel stays available as a fallback if DNS is pointed back at those records.
 
 ## Self-hosting on Ubuntu
-The production path for Gomez's own server is documented in Dutch in [deploy/README.md](deploy/README.md). The Next.js app listens on `127.0.0.1:3100` (`npm start` after `npm run build`). Nginx serves `https://www.defaultstack.online`, redirects the apex domain to www, proxies `https://api.defaultstack.online` to the Express API on port 3000, and routes other subdomains from `/etc/nginx/defaultstack/subdomains.map`.
+The production path for the home server is documented in Dutch in [deploy/README.md](deploy/README.md). That machine is `192.168.2.69` on the LAN. Cloudflare Tunnel is the primary path: TLS ends at Cloudflare, and Nginx on `127.0.0.1:80` routes `www`, the apex redirect, `api`, and other subdomains. The Next.js app listens on `127.0.0.1:3100`. Ports 80 and 443 stay closed. `MODE=direct` is the alternative with public ports and Let's Encrypt.
 
 ## Backend integration
 The Ubuntu Express API responds on port 3000 locally. In production, Nginx reaches it at `api.defaultstack.online` and the process should bind to `127.0.0.1` only. A Windows SSH tunnel forwarding port 3001 is for local development only; a Vercel deployment cannot reach the private `localhost:3001` URL. Secure the backend before exposing any API publicly. Do not expose PostgreSQL to the internet.
