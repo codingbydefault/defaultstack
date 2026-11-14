@@ -86,6 +86,5 @@ container-environment of secrets. Het dashboard krijgt geen Dockerrechten.
 
 De Vercel-frontend kan het lokale bestand op Ubuntu niet lezen. Daar blijft de
 serverstatus losgekoppeld totdat een beveiligde API-verbinding beschikbaar is.
-De DNS-koppeling van defaultstackr.cloud aan Vercel staat los van de eerdere
-Ubuntu-tunneltemplates voor defaultstackr.online. Pas geen tunnelconfig toe
-voordat vaststaat welk domein voor de thuisserver wordt gebruikt.
+De canonische domeinnaam is defaultstackr.online. Vercel kan tijdelijk de
+frontend hosten; het lezen van Ubuntu-status blijft daar losgekoppeld.

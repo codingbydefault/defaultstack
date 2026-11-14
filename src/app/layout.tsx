@@ -1,8 +1,9 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.defaultstackr.cloud"),
+  metadataBase: new URL(SITE_URL),
   alternates: { canonical: "./" },
   title: "DefaultStack — Build. Deploy. Scale.",
   description:
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
     title: "DefaultStack by CodedByDefault",
     description: "Building an integrated cloud development platform. Follow our progress.",
     siteName: "DefaultStack",
-    url: "https://www.defaultstackr.cloud",
+    url: SITE_URL,
     type: "website",
   },
 };

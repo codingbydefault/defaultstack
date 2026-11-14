@@ -21,6 +21,9 @@ try {
   }
   assert(ready, 'server starts');
   assert.equal((await fetch(`${base}/app`)).status, 200);
+  const homepage = await (await fetch(base)).text();
+  assert(homepage.includes('https://www.defaultstackr.online'), 'canonical domain matches');
+  assert(!homepage.includes('defaultstackr.cloud'), 'old domain removed');
   let response = await fetch(`${base}/api/platform`);
   assert.match(response.headers.get('cache-control'), /no-store/);
   assert.equal((await response.json()).connected, false);
