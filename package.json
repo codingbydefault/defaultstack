@@ -8,7 +8,8 @@
     "build": "next build && node scripts/prepare-standalone.mjs",
     "start": "node scripts/start-standalone.mjs",
     "start:next": "next start -H 127.0.0.1 -p 3100",
-    "test": "node scripts/tests/platform.mjs"
+    "lint": "tsc --noEmit --pretty false",
+    "test": "node scripts/tests/platform.mjs && node scripts/tests/dashboard.mjs"
   },
   "engines": {
     "node": ">=20"

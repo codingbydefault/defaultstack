@@ -4,7 +4,8 @@ A Next.js Cloud Gradient landing page with a separate platform preview.
 
 ## Routes
 - `/` public landing page, the entry point for all new visitors.
-- `/app` platform preview, not yet a working client application.
+- `/app` beheerconsole. Zonder geldige sessie volgt een redirect naar `/app/login`.
+- `/app/login` beheerlogin met een httpOnly-sessiecookie.
 
 ## Run locally
 
@@ -48,10 +49,33 @@ The production path for the home server is documented in Dutch in [deploy/README
 ## Backend integration
 The Ubuntu Express API responds on port 3000 locally. In production, Nginx reaches it at `api.defaultstackr.cloud` and the process should bind to `127.0.0.1` only. A Windows SSH tunnel forwarding port 3001 is for local development only; a Vercel deployment cannot reach the private `localhost:3001` URL. Secure the backend before exposing any API publicly. Do not expose PostgreSQL to the internet.
 
-There is currently no real hosting, authentication, database management or billing on this site.
+The dashboard calls the Express API for projects, deploys, domains and environment variables. Until those routes exist, set `DEFAULTSTACKR_MOCK=true`. Billing is not implemented. The admin session is one shared password, separate from the API key.
+## Beheerconsole, omgeving en mock-modus
+
+`/app` praat alleen met Next.js. De browser krijgt nooit `DEFAULTSTACKR_API_KEY`. Route handlers lezen de variabelen hieronder en sturen `Authorization: Bearer` naar Express. Zet ze in `.env.local` op de server en herstart PM2-app `defaultstackr-web`. Geen van deze namen mag `NEXT_PUBLIC_` worden.
+
+| Variabele | Betekenis |
+| --- | --- |
+| `DEFAULTSTACKR_API_URL` | Express, op dezelfde machine `http://127.0.0.1:3000`. Later `https://api.defaultstackr.cloud`. |
+| `DEFAULTSTACKR_API_KEY` | Admin-sleutel van de API. Alleen op de server. |
+| `DEFAULTSTACKR_ADMIN_PASSWORD_HASH` | scrypt-hash van het beheerwachtwoord. |
+| `DEFAULTSTACKR_SESSION_SECRET` | Geheim voor het httpOnly-cookie, minstens 16 tekens. |
+| `DEFAULTSTACKR_MOCK` | `true` laat de console werken zonder Express, met voorbeeldprojecten en alle DNS-statussen. |
+| `DEFAULTSTACKR_EDGE_CNAME` | Optioneel CNAME-doel in mock-modus. Standaard `edge.defaultstackr.cloud`. |
+| `DEFAULTSTACKR_EDGE_IPV4` | Optioneel A-record in mock-modus. Standaard het documentatie-adres `192.0.2.40`. |
+
+Hash maken, wachtwoord via stdin:
+
+```bash
+printf '%s' 'kies-een-lang-wachtwoord' | node scripts/hash-admin-password.mjs
+```
+
+De paden in `src/lib/api/contract.ts` zijn voorlopig. Daar staan TODO-markeringen tot `defaultstackr-api` de project-, deploy-, domein- en env-routes levert. Zet `DEFAULTSTACKR_MOCK` uit zodra die API antwoordt. Een domein kan na de TXT-controle `_defaultstackr-verify.<domein>` maar aan één project hangen.
+
 ## Private database table editor
 
-`/app` now provides Users and Products tables, search over loaded records, insert,
+The table editor is no longer mounted in `/app`. Its server route remains for
+private-network use: Users and Products, search over loaded records, insert,
 edit, and confirmed deletion. Data goes through Next.js server routes to the
 existing Express API; PostgreSQL credentials never enter the browser.
 
@@ -85,12 +109,9 @@ Bestaande geïnstalleerde serverconfiguraties veranderen pas na expliciet toepas
 
 ## Workspace dashboard
 
-`/app` combines the DefaultStackr overview, real application status, deployment
-command preparation, table editor, migration/RLS guidance and connection settings.
-The deployment dialog prepares an Ubuntu command; it does not execute Docker from
-the browser. Read-only metadata is exported with `node deploy/apps/export-status.mjs`.
-Set `DEFAULTSTACK_STATE_DIR` in `.env.local` and restart Next.js. Never give the
-web process Docker group membership. Without a snapshot the dashboard shows an
-honest disconnected state. Snapshots older than two minutes are marked stale.
-The deploy script exports automatically after success; periodic refresh on the
-server is not configured yet. GitHub integration and account auth remain pending.
+`/app` is the Dutch admin console: projects, deployments, DNS settings,
+environment variables and project settings. The older snapshot view is no longer
+mounted there. `/api/platform` still reads a read-only status file when
+`DEFAULTSTACK_STATE_DIR` is set. The Docker deploy script and
+`node deploy/apps/export-status.mjs` are unchanged and still do not run from
+the browser. GitHub login for end users is not part of this admin session.

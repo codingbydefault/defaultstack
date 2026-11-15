@@ -20,7 +20,10 @@ try {
     await new Promise(resolve => setTimeout(resolve, 250));
   }
   assert(ready, 'server starts');
-  assert.equal((await fetch(`${base}/app`)).status, 200);
+  const appPage = await fetch(`${base}/app`, { redirect: 'manual' });
+  assert.equal(appPage.status, 307);
+  assert.match(appPage.headers.get('location') || '', /\/app\/login/);
+  assert.equal((await fetch(`${base}/app/login`)).status, 200);
   const homepage = await (await fetch(base)).text();
   assert(homepage.includes('https://www.defaultstackr.cloud'), 'canonical domain matches');
   assert(!homepage.includes('defaultstackr.online'), 'mistaken .online domain removed');
