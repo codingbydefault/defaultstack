@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { SESSION_COOKIE, readSession } from '@/lib/auth/session';
+import { LOGIN_TARGET_HEADER, SESSION_COOKIE, loginRedirectPath, readSession } from '@/lib/auth/session';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -12,15 +12,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname === '/app/login') return NextResponse.next();
-  if (!signedIn) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/app/login';
-    url.search = '';
-    if (pathname !== '/app') url.searchParams.set('next', pathname);
-    return NextResponse.redirect(url);
-  }
-  return NextResponse.next();
+  // Next.js parses a middleware Location with the internal host, so a redirect
+  // here becomes https://localhost:3100/... behind Nginx. Pass a relative
+  // target and let the app layout emit the Location header. `next` is only
+  // included when the path is not exactly /app.
+  const headers = new Headers(request.headers);
+  headers.delete(LOGIN_TARGET_HEADER);
+  if (pathname !== '/app/login' && !signedIn) headers.set(LOGIN_TARGET_HEADER, loginRedirectPath(pathname));
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {

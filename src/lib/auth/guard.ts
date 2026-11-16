@@ -1,11 +1,15 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { SESSION_COOKIE, readSession } from '@/lib/auth/session';
+import { LOGIN_TARGET_HEADER, SESSION_COOKIE, readSession, safeLoginLocation } from '@/lib/auth/session';
+
+export function redirectToLogin(target: string | null | undefined): never {
+  redirect(safeLoginLocation(target));
+}
 
 export async function requireSession(): Promise<void> {
   const jar = await cookies();
   const ok = await readSession(jar.get(SESSION_COOKIE)?.value);
-  if (!ok) redirect('/app/login');
+  if (!ok) redirectToLogin((await headers()).get(LOGIN_TARGET_HEADER));
 }
 
 export function rejectsCrossSite(request: Request): boolean {

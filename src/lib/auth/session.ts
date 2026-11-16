@@ -76,6 +76,30 @@ export function safeNextPath(value: string | undefined): string {
   return value;
 }
 
+// Middleware tells the app layout which relative login URL to send.
+// A Location set inside middleware is rewritten to the bind host
+// (https://localhost:3100) behind Nginx.
+export const LOGIN_TARGET_HEADER = 'x-defaultstackr-login';
+
+export function loginRedirectPath(pathname: string): string {
+  const next = pathname !== '/app';
+  return '/app/login' + (next ? '?next=' + encodeURIComponent(pathname) : '');
+}
+
+export function safeLoginLocation(value: string | null | undefined): string {
+  if (value === '/app/login') return value;
+  const prefix = '/app/login?next=';
+  if (!value || !value.startsWith(prefix)) return '/app/login';
+  let pathname: string;
+  try {
+    pathname = decodeURIComponent(value.slice(prefix.length));
+  } catch {
+    return '/app/login';
+  }
+  if (loginRedirectPath(pathname) !== value || safeNextPath(pathname) !== pathname) return '/app/login';
+  return value;
+}
+
 export const sessionCookieOptions = {
   name: SESSION_COOKIE,
   httpOnly: true,
