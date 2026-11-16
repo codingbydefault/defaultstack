@@ -80,6 +80,14 @@ Het gratis **Universal SSL** van Cloudflare dekt `defaultstackr.cloud` en één 
 
 `cert.pem` en het credentials-JSON blijven in `/root/.cloudflared/`. Die bestanden komen niet in git en het script print ze niet. Kopieer ze niet naar de repository.
 
+## Als setup-tunnel.sh vastloopt
+
+Het script mag vaker. Drie dingen die op deze server al gebeurden:
+
+- **Tunnel `defaultstackr` bestaat al.** Het script zoekt hem via `tunnel list` en daarna via `tunnel info`. Lukt aanmaken met “already exists”, dan zoekt het nog een keer. Ontbreekt `/root/.cloudflared/<id>.json`, dan stopt het zonder die inhoud te tonen. Herstel dat bestand vanuit een backup, of verwijder de tunnel in Cloudflare en draai het script opnieuw. Plak het JSON-bestand niet in git.
+- **Apex geeft code 1003.** Er staan meerdere A-records op `@`. Verwijder in DNS → Records alle A- en AAAA-records voor `defaultstackr.cloud`. Een CNAME naar de tunnel mag blijven. www, api en `*` gaan wel door. Draai het script daarna opnieuw voor de apex.
+- **`cloudflared.service` bestaat al.** Gebruikt die unit `/etc/cloudflared/config.yml`, dan wordt hij alleen herstart. Wijst hij naar een oude dashboard-tunnel (een token), dan stopt het script en laat die service staan. Daarna: `sudo cloudflared service uninstall`, of verwijder de oude tunnel in Zero Trust → Tunnels en dan `sudo rm /etc/systemd/system/cloudflared.service && sudo systemctl daemon-reload`.
+
 Forward op de router geen 80, 443, 3000, 3100 of 5432. Het LAN-adres 192.168.2.69 hoort niet in de publieke DNS.
 
 ## Een subdomein toevoegen
