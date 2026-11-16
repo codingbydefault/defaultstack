@@ -23,6 +23,9 @@ ingress:
     service: http://127.0.0.1:80
   - hostname: api.defaultstackr.cloud
     service: http://127.0.0.1:80
+  # Cloudflare Access beschermt deze SSH-route met het beheerderbeleid.
+  - hostname: ssh.defaultstackr.cloud
+    service: ssh://127.0.0.1:22
   - hostname: "*.defaultstackr.cloud"
     service: http://127.0.0.1:80
   - service: http_status:404
