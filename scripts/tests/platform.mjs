@@ -3,11 +3,27 @@ import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+import { createHmac } from 'node:crypto';
+import { request as httpRequest } from 'node:http';
 const directory = await mkdtemp(path.join(os.tmpdir(), 'defaultstack-test-'));
 const port = 3197;
 const base = `http://127.0.0.1:${port}`;
+const secret = 'platform-test-session-secret';
+const payload = Buffer.from(JSON.stringify({ sub: 'admin', exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url');
+const cookie = `ds_session=${payload}.${createHmac('sha256', secret).update(payload).digest('base64url')}`;
+const headers = { cookie };
+function statusForHost(pathname, host) {
+  return new Promise((resolve, reject) => {
+    const req = httpRequest(`${base}${pathname}`, { headers: { Host: host } }, response => {
+      response.resume();
+      resolve(response.statusCode);
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 const server = spawn(process.execPath, ['scripts/start-standalone.mjs'], {
-  env: { ...process.env, NODE_ENV: 'production', PORT: String(port), BIND_HOST: '127.0.0.1', DEFAULTSTACK_STATE_DIR: directory, ENABLE_LOCAL_DATABASE_EDITOR: 'false' }, stdio: ['ignore', 'ignore', 'pipe'],
+  env: { ...process.env, NODE_ENV: 'production', PORT: String(port), BIND_HOST: '127.0.0.1', DEFAULTSTACK_STATE_DIR: directory, DEFAULTSTACKR_SESSION_SECRET: secret, ENABLE_LOCAL_DATABASE_EDITOR: 'false' }, stdio: ['ignore', 'ignore', 'pipe'],
 });
 let errors = '';
 server.stderr.on('data', chunk => { errors += chunk; });
@@ -24,23 +40,28 @@ try {
   assert.equal(appPage.status, 307);
   assert.match(appPage.headers.get('location') || '', /\/app\/login/);
   assert.equal((await fetch(`${base}/app/login`)).status, 200);
+  assert.equal(await statusForHost('/app', 'www.defaultstackr.nl'), 404);
+  assert.equal(await statusForHost('/api/platform', 'www.defaultstackr.nl'), 404);
   const homepage = await (await fetch(base)).text();
-  assert(homepage.includes('https://www.defaultstackr.cloud'), 'canonical domain matches');
-  assert(!homepage.includes('defaultstackr.online'), 'mistaken .online domain removed');
+  assert(homepage.includes('https://www.defaultstackr.nl'), 'canonical domain matches');
+  assert(homepage.includes('https://defaultstackr.cloud/app'), 'console link matches');
   assert(!homepage.includes('defaultstack.online'), 'original domain removed');
   let response = await fetch(`${base}/api/platform`);
+  assert.equal(response.status, 401);
+  response = await fetch(`${base}/api/platform`, { headers });
   assert.match(response.headers.get('cache-control'), /no-store/);
   assert.equal((await response.json()).connected, false);
   const fixture = { generatedAt: new Date().toISOString(), secret: 'never expose', deployments: [{ name: 'hello', image: 'defaultstack/hello:test', state: 'running', health: 'healthy', port: 3200, created: new Date().toISOString(), secret: 'never expose' }] };
   await writeFile(path.join(directory, 'status.json'), JSON.stringify(fixture));
-  const actual = await (await fetch(`${base}/api/platform`)).json();
+  const actual = await (await fetch(`${base}/api/platform`, { headers })).json();
   assert.equal(actual.connected, true); assert.equal(actual.stale, false); assert.equal(actual.deployments[0].name, 'hello'); assert(!JSON.stringify(actual).includes('never expose'));
   fixture.generatedAt = new Date(Date.now() - 180000).toISOString();
   await writeFile(path.join(directory, 'status.json'), JSON.stringify(fixture));
-  assert.equal((await (await fetch(`${base}/api/platform`)).json()).stale, true);
+  assert.equal((await (await fetch(`${base}/api/platform`, { headers })).json()).stale, true);
   await writeFile(path.join(directory, 'status.json'), '{broken');
-  assert.equal((await (await fetch(`${base}/api/platform`)).json()).connected, false);
-  assert.equal((await fetch(`${base}/api/data/users`)).status, 503);
+  assert.equal((await (await fetch(`${base}/api/platform`, { headers })).json()).connected, false);
+  assert.equal((await fetch(`${base}/api/data/users`)).status, 401);
+  assert.equal((await fetch(`${base}/api/data/users`, { headers })).status, 503);
   console.log('PASS: production app, health, missing/valid/stale/corrupt snapshots, metadata whitelist, database disabled');
 } finally {
   server.kill('SIGTERM');

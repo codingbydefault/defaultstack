@@ -9,6 +9,14 @@ tunnel: 00000000-0000-0000-0000-000000000000
 credentials-file: /root/.cloudflared/00000000-0000-0000-0000-000000000000.json
 
 ingress:
+  - hostname: www.defaultstackr.nl
+    service: http://127.0.0.1:80
+  - hostname: defaultstackr.nl
+    service: http://127.0.0.1:80
+  - hostname: www.defaultstackr.online
+    service: http://127.0.0.1:80
+  - hostname: defaultstackr.online
+    service: http://127.0.0.1:80
   - hostname: www.defaultstackr.cloud
     service: http://127.0.0.1:80
   - hostname: defaultstackr.cloud

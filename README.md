@@ -1,5 +1,11 @@
 # DefaultStackr by CodedByDefault
 
+Nieuwe domeinindeling in voorbereiding: publieke site op `www.defaultstackr.nl`,
+`.online` als doorverwijzing, en de beheerconsole op `defaultstackr.cloud/app`.
+Zie [deploy/DOMAIN-UPDATE.md](deploy/DOMAIN-UPDATE.md) voor de tunnelconfiguratie en
+de stappen die nog op de thuisserver nodig zijn. Oudere instructies hieronder
+beschrijven de huidige `.cloud`-installatie en zijn niet het nieuwe domeinplan.
+
 A Next.js Cloud Gradient landing page with a separate platform preview.
 
 ## Routes

@@ -240,6 +240,10 @@ route_dns "www.defaultstackr.cloud"
 route_dns "defaultstackr.cloud"
 route_dns "api.defaultstackr.cloud"
 route_dns "*.defaultstackr.cloud"
+route_dns "www.defaultstackr.nl"
+route_dns "defaultstackr.nl"
+route_dns "www.defaultstackr.online"
+route_dns "defaultstackr.online"
 
 cloudflared --config /etc/cloudflared/config.yml tunnel ingress validate
 

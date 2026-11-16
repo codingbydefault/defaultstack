@@ -1,72 +1,62 @@
-# Alles op defaultstackr.cloud
+# Domeinen en eerste Plainwork-deploy (Cloudflare Tunnel)
 
-De frontendmetadata en workspace gebruiken één domeinbron in src/lib/site.ts.
-De Nginx-, tunnel-, DNS- en certificaattemplates gebruiken defaultstackr.cloud.
-Een Git-update wijzigt geen reeds geïnstalleerde bestanden onder /etc.
+Dit draaiboek geldt voor de bestaande tunnelmodus op de thuisserver. Het is voorbereid in Git; er is hiermee nog geen DNS, serverconfiguratie of database gewijzigd.
 
-## Op Ubuntu via je bestaande SSH-terminal
+| Host | Bestemming |
+| --- | --- |
+| `www.defaultstackr.nl` | Publieke frontend op `127.0.0.1:3100` |
+| `defaultstackr.nl`, `defaultstackr.online`, `www.defaultstackr.online` | 301 naar `https://www.defaultstackr.nl` |
+| `defaultstackr.cloud` | Beheerconsole op `/app`, met bestaande sessielogin |
+| `www.defaultstackr.cloud` | 301 naar `https://defaultstackr.cloud` |
+| `*.defaultstackr.cloud` | Bestaande projectdeployments, waaronder `plainwork.defaultstackr.cloud` |
+| `api.defaultstackr.cloud` | 404; Express blijft lokaal bereikbaar |
+
+De publieke host blokkeert `/app` en `/api/`; Next.js controleert de beheerhost en sessie ook zelf. De status-API en lokale database-editor vereisen nu eveneens de beheersessie. De beheerconsole heeft momenteel één gedeeld adminaccount. Dit is nog geen accountmodel voor klanten.
+
+## Eerst controleren
+
+1. Zorg dat `defaultstackr.nl`, `defaultstackr.online` en `defaultstackr.cloud` als **Active** zones in hetzelfde Cloudflare-account staan als de bestaande tunnel `defaultstackr`. De nameservers bij de registrar moeten exact de twee nameservers van elke betreffende zone zijn.
+2. Controleer dat de huidige `*.defaultstackr.cloud`-route en projectsubdomeinen blijven bestaan. Noteer de bestaande DNS-records voor rollback. Verwijder geen bestaande projectroutes.
+3. Controleer op de server welke branch en werkmap actief zijn (`git status`, `pm2 show defaultstackr-web`). Maak een backup van `/etc/nginx/sites-available/defaultstackr.conf` en `/etc/cloudflared/config.yml` buiten de repository.
+4. Controleer dat de API lokaal werkt met `curl --fail http://127.0.0.1:3000/health` en dat `DEFAULTSTACKR_MOCK` uit staat wanneer de echte API-koppeling is gevalideerd. De frontend verwacht nog `/v1`, terwijl de API `/api/projects` biedt; zonder aanpassing werkt het dashboard niet volledig op de echte API.
+
+## Na code-update op de server
+
+Voer dit uit in de bestaande frontend-clone. Gebruik de voorbereide branch totdat de wijzigingen zijn gemerged.
 
 ```bash
-cd /home/coded/platform-frontend/defaultstack
-git pull --ff-only
-bash deploy/apps/doctor.sh
-node deploy/apps/export-status.mjs
-```
-
-Stop een eventueel draaiende `npm run dev` met Ctrl+C in zijn eigen terminal
-voordat je een productiebuild maakt. Stop Express en de hello-container niet.
-
-```bash
+git fetch origin
+git checkout codex/public-domains-dashboard
+git pull --ff-only origin codex/public-domains-dashboard
 npm ci
 npm run build
 npm test
+sudo MODE=tunnel bash deploy/nginx/install-config.sh
+sudo bash deploy/cloudflared/setup-tunnel.sh
+pm2 startOrReload deploy/ecosystem.config.cjs --update-env
 ```
 
-Voeg in .env.local de statusdirectory toe, zonder bestaande regels te verwijderen:
+`setup-tunnel.sh` zet de vier nieuwe DNS-routes naar de bestaande tunnel. Het script verwacht toegang tot alle drie zones. Het oude `deploy/sync-domain.sh` is uitgezet omdat het `.online` onterecht naar `.cloud` omzette.
 
-```env
-DEFAULTSTACK_STATE_DIR=/home/coded/.local/state/defaultstack
-```
-
-Voor bestaande Nginx/tunnel-configuratie:
+## Controle van buitenaf
 
 ```bash
-sudo bash deploy/sync-domain.sh
+curl -sI https://www.defaultstackr.nl/
+curl -sI https://defaultstackr.nl/
+curl -sI https://defaultstackr.online/
+curl -sI https://www.defaultstackr.online/
+curl -sI https://defaultstackr.cloud/
+curl -sI https://www.defaultstackr.nl/app
+curl -sI https://defaultstackr.cloud/app
+curl -sI https://plainwork.defaultstackr.cloud/
 ```
 
-Dit script werkt alleen bestaande DefaultStackr-bestanden bij, bewaart originele
-bestanden onder /var/backups en valideert voor herladen. Bij fouten zet het ze
-terug. Subdomeinregels en poorten blijven behouden. Een niet-bestaande tunnel
-wordt niet aangemaakt. systemd wordt verwacht voor herladen van actieve services.
-Een wijziging van een tunnel-hostname maakt nog geen DNS-route in Cloudflare.
-Controleer dat de zone defaultstackr.cloud Active is en maak dan de routes via
-de tunnelsetup. Nieuwe certificaten zijn nodig bij directe HTTPS-hosting.
-Het script wijzigt geen private keys, firewall, backendcode of database-inhoud.
+Verwacht: `.nl` hoofdsite 200, drie publieke aliasnamen 301 naar `www.defaultstackr.nl`, `.cloud/` 302 naar `/app`, `.nl/app` 404 en `.cloud/app` een loginredirect zonder sessie. Plainwork krijgt pas een succesvolle respons nadat de app werkelijk op de server is gedeployed.
 
-Start de frontend nadat poort 3100 vrij is:
+## Plainwork en de eigen database
 
-```bash
-npm start
-```
+De bestaande API-repository bevat `docs/launch-maandag.md` met de deployvolgorde voor `plainwork.defaultstackr.cloud`: project, vaultwaarden, worker, deploy en domeincheck. Dit kan pas op de server met de admin API-sleutel en de vereiste omgevingsvariabelen. Plaats geen sleutels in Git of chat.
 
-Productie bindt bewust op 127.0.0.1:3100. Via een SSH-portforward op je eigen
-computer: `ssh -L 3100:127.0.0.1:3100 coded@192.168.2.69`, daarna
-http://localhost:3100/app. Met bestaande PM2-installatie gebruik je in plaats
-van npm start: `pm2 startOrReload deploy/ecosystem.config.cjs --update-env` en
-`pm2 save`. Start nooit beide tegelijk.
+Plainwork gebruikt momenteel Supabase PostgreSQL, Auth, Storage en de Supabase Data API. Een kopie van alleen tabellen naar de bestaande lokale PostgreSQL is daarom geen volledige migratie. Begin met een geïsoleerde testomgeving en inventariseer schema, migraties, gebruikers, buckets, policies en bestanden. Daarna kan een self-hosted Supabase-stack op de eigen server worden ingericht, of kunnen Auth, Storage en de Data API afzonderlijk worden vervangen. Test login, upload, aankoop, webhook en download voordat `NEXT_PUBLIC_SUPABASE_URL` naar de eigen omgeving gaat. Laat de bestaande Vercel-deploy als terugval staan tot die controles slagen.
 
-## Buiten de repository
-
-De Express-broncode op /home/coded/supabase_clone_api staat niet in deze repo.
-CORS/origin-allowlists, OAuth-redirects, webhooks en eventuele externe
-omgevingsvariabelen moeten apart gecontroleerd worden wanneer die bestaan.
-Toon nooit .env-inhoud of secrets in chat. De API blijft privé tot login en
-projectrechten zijn ingericht.
-
-Controle na het starten:
-
-```bash
-curl --fail http://127.0.0.1:3100/healthz
-curl --fail http://127.0.0.1:3200/healthz
-bash deploy/apps/doctor.sh
-```
+Voor meerdere klantprojecten hoort elk project een eigen PostgreSQL-database of aparte isolatie met eigen credentials, backups en toegangsrechten te krijgen. De beheerconsole bewaart de projectmetadata in een afzonderlijke platformdatabase. Een dashboardprofiel is geen database-isolatie.

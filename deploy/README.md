@@ -1,5 +1,9 @@
 # DefaultStackr thuis, via Cloudflare Tunnel
 
+**Domeinupdate:** voor `.nl` en `.online` en de beheerconsole op `.cloud` geldt
+[DOMAIN-UPDATE.md](DOMAIN-UPDATE.md). De hostnamen hieronder beschrijven de
+oorspronkelijke installatie. Voer `deploy/sync-domain.sh` niet meer uit.
+
 De site draait op de Ubuntu-machine in huis, **LAN-adres 192.168.2.69**. Bezoekers komen binnen via Cloudflare. De router forwardt niets. Poort 80 en 443 op de server blijven dicht.
 
 De canonische site is `https://www.defaultstackr.cloud`. `https://defaultstackr.cloud` stuurt met een 301 door naar www.
