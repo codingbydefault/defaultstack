@@ -39,8 +39,8 @@ export function EnvPanel({ projectId }: { projectId: string }) {
     setBusy(true);
     setError('');
     try {
-      const created = await dashboardApi.createEnv(projectId, form);
-      setItems(current => [created, ...current.filter(item => item.key !== created.key)]);
+      await dashboardApi.createEnv(projectId, form);
+      setItems(await dashboardApi.envVars(projectId));
       setForm(empty);
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'Opslaan mislukt.');

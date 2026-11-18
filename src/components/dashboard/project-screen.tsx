@@ -9,11 +9,13 @@ import { DomainsPanel } from '@/components/dashboard/domains-panel';
 import { EnvPanel } from '@/components/dashboard/env-panel';
 import { chipClass, projectStatusLabel } from '@/components/dashboard/format';
 import { SettingsPanel } from '@/components/dashboard/settings-panel';
+import { MigrationsPanel } from '@/components/dashboard/migrations-panel';
 
 const tabs = [
   ['deployments', 'Uitrollen'],
   ['domains', 'DNS-instellingen'],
   ['env', 'Omgevingsvariabelen'],
+  ['migrations', 'SQL-migraties'],
   ['settings', 'Instellingen'],
 ] as const;
 
@@ -54,6 +56,7 @@ export function ProjectScreen({ projectId, tab }: { projectId: string; tab: Proj
       {tab === 'deployments' && <DeploymentsPanel projectId={project.id} />}
       {tab === 'domains' && <DomainsPanel projectId={project.id} previewHost={project.previewHostname} />}
       {tab === 'env' && <EnvPanel projectId={project.id} />}
+      {tab === 'migrations' && <MigrationsPanel projectId={project.id} />}
       {tab === 'settings' && <SettingsPanel project={project} onChange={setProject} />}
     </>
   );

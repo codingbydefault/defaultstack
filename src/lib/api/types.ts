@@ -32,6 +32,9 @@ export type Project = {
   branch: string;
   buildCommand: string;
   startCommand: string;
+  installCommand?: string;
+  healthPath?: string;
+  framework?: string;
   status: ProjectStatus;
   latestDeployment: LatestDeployment | null;
   primaryHostname: string | null;
@@ -46,6 +49,10 @@ export type ProjectInput = {
   branch: string;
   buildCommand: string;
   startCommand: string;
+  slug?: string;
+  installCommand?: string;
+  healthPath?: string;
+  framework?: string;
 };
 
 export type Deployment = {
@@ -86,6 +93,14 @@ export type DnsRecord = {
   flattening: boolean;
 };
 
+export type DomainRoutingOption = {
+  id: string;
+  type: 'CNAME' | 'NS';
+  hostname: string;
+  value: string | null;
+  note: string;
+};
+
 export type Domain = {
   id: string;
   projectId: string;
@@ -99,6 +114,8 @@ export type Domain = {
     checkedAt: string | null;
   };
   records: DnsRecord[];
+  /** Alternative apex routes supplied by the API; choose one, never all. */
+  routingOptions?: DomainRoutingOption[];
 };
 
 export type DomainInput = {
@@ -125,4 +142,11 @@ export type EnvVarInput = {
 export type ApiErrorBody = {
   error: string;
   code?: string;
+};
+
+export type Migration = {
+  name: string;
+  checksum: string;
+  appliedAt: string;
+  alreadyApplied?: boolean;
 };

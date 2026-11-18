@@ -1,0 +1,11 @@
+{
+  "version": "2026-11",
+  "currency": "eur",
+  "free": { "name": "Free", "monthlyCents": 0, "yearlyCents": 0, "activeProjects": 3, "databaseGb": 2, "mailboxesPerProfile": 1, "mailboxGb": 2, "mailDomainChoices": ["x.defaultstackr.nl", "x.defaultstackr.online"] },
+  "pro": { "name": "Pro", "monthlyCents": 2900, "yearlyCents": 29000, "activeProjects": 10, "databaseGb": 5, "mailboxesPerDomain": 10, "mailboxGb": 10 },
+  "business": {
+    "name": "Business", "monthlyCents": 5900, "yearlyCents": 59000,
+    "includedProjects": 10, "includedDatabaseGb": 5, "mailboxesPerDomain": 25, "mailboxGb": 10,
+    "extraProjectMonthlyCents": 500, "extraDatabaseGbMonthlyCents": 200
+  }
+}

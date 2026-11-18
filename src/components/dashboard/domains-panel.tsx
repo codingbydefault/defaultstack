@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { ApiError, dashboardApi } from '@/lib/api/client';
-import type { DnsRecord, Domain, DomainKind, DomainRedirect, DomainStatus } from '@/lib/api/types';
+import type { DnsRecord, Domain, DomainKind, DomainStatus } from '@/lib/api/types';
 import { CopyButton } from '@/components/dashboard/copy-button';
 import { chipClass, domainStatusLabel, formatWhen, redirectLabel } from '@/components/dashboard/format';
 
@@ -29,6 +29,7 @@ function Stepper({ status, failed }: { status: DomainStatus; failed: boolean }) 
 }
 
 function RegistrarHelp({ domain }: { domain: Domain }) {
+  if (domain.routingOptions?.length) return <p className="console-callout">Maak het TXT-record hierboven aan om eigendom te bewijzen. Kies daarnaast één van de routeringsroutes hieronder die jouw DNS-provider ondersteunt. Een www-CNAME alleen laat het hoofddomein nog niet werken; stel daarvoor bij je provider ook een doorverwijzing naar www in.</p>;
   const lines = domain.records.map(record => `${recordTitle(record)}  ${record.host}  →  ${record.value}`).join('\n');
   const hasFlattening = domain.records.some(record => record.flattening);
   const hasAlias = domain.records.some(record => record.type === 'ALIAS');
@@ -83,7 +84,6 @@ export function DomainsPanel({ projectId, previewHost }: { projectId: string; pr
   const [busy, setBusy] = useState('');
   const [hostname, setHostname] = useState('');
   const [kind, setKind] = useState<DomainKind>('apex');
-  const [redirect, setRedirect] = useState<DomainRedirect>('apex_to_www');
   const [removing, setRemoving] = useState<string | null>(null);
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export function DomainsPanel({ projectId, previewHost }: { projectId: string; pr
     setBusy('add');
     setError('');
     try {
-      const created = await dashboardApi.addDomain(projectId, { hostname, kind, redirect: kind === 'apex' ? redirect : 'none' });
+      const created = await dashboardApi.addDomain(projectId, { hostname, kind, redirect: 'none' });
       setDomains(current => [created, ...current]);
       setHostname('');
     } catch (cause) {
@@ -152,25 +152,19 @@ export function DomainsPanel({ projectId, previewHost }: { projectId: string; pr
         <div className="section-title">
           <div>
             <h2>Domein koppelen</h2>
-            <p>Voeg een apex-domein of een subdomein toe. Bij een apex kies je of apex en www naar elkaar doorverwijzen.</p>
+            <p>Voeg een hoofddomein of subdomein toe en volg daarna de DNS-instructies van de API.</p>
           </div>
         </div>
         <fieldset>
           <legend>Soort</legend>
           <label><input type="radio" name="kind" checked={kind === 'apex'} onChange={() => setKind('apex')} /> Apex-domein</label>
-          <label><input type="radio" name="kind" checked={kind === 'subdomain'} onChange={() => { setKind('subdomain'); setRedirect('none'); }} /> Subdomein</label>
+          <label><input type="radio" name="kind" checked={kind === 'subdomain'} onChange={() => setKind('subdomain')} /> Subdomein</label>
         </fieldset>
         <label>
           Hostnaam
           <input required value={hostname} placeholder={kind === 'apex' ? 'voorbeeld.nl' : 'app.voorbeeld.nl'} onChange={event => setHostname(event.target.value)} autoCapitalize="none" spellCheck={false} />
         </label>
-        <fieldset disabled={kind !== 'apex'}>
-          <legend>Doorverwijzing</legend>
-          <label><input type="radio" name="redirect" checked={redirect === 'none'} onChange={() => setRedirect('none')} /> Geen</label>
-          <label><input type="radio" name="redirect" checked={redirect === 'apex_to_www'} onChange={() => setRedirect('apex_to_www')} /> Apex naar www</label>
-          <label><input type="radio" name="redirect" checked={redirect === 'www_to_apex'} onChange={() => setRedirect('www_to_apex')} /> www naar apex</label>
-        </fieldset>
-        <p className="field-hint">De records hieronder komen van de API. Een apex is een CNAME met Cloudflare-flattening, een ALIAS, of een A-record. Een subdomein is een CNAME. Daarnaast altijd TXT <code>_defaultstackr-verify.&lt;domein&gt;</code>.</p>
+        <p className="field-hint">De API beheert nog geen automatische doorverwijzing tussen het hoofddomein en www. Voor een hoofddomein toont het portaal de beschikbare DNS-routes apart; je kiest er één. Daarnaast is altijd een TXT-record voor eigendomscontrole nodig.</p>
         {error && <p role="alert" className="db-error">{error}</p>}
         <button className="primary" type="submit" disabled={busy === 'add'}>{busy === 'add' ? 'Bezig…' : 'Domein toevoegen'}</button>
       </form>
@@ -184,7 +178,7 @@ export function DomainsPanel({ projectId, previewHost }: { projectId: string; pr
             <header>
               <div>
                 <h2>{domain.hostname}</h2>
-                <p>{domain.kind === 'apex' ? 'Apex' : 'Subdomein'} · {redirectLabel[domain.redirect]}</p>
+                <p>{domain.kind === 'apex' ? 'Hoofddomein' : 'Subdomein'}{domain.redirect !== 'none' ? ` · ${redirectLabel[domain.redirect]}` : ''}</p>
               </div>
               <span className={`status-chip ${chipClass(domain.status, domain.check.code)}`}>{failed ? 'Actie nodig' : domainStatusLabel[domain.status]}</span>
             </header>
@@ -207,6 +201,7 @@ export function DomainsPanel({ projectId, previewHost }: { projectId: string; pr
                 </tbody>
               </table>
             </div>
+            {Boolean(domain.routingOptions?.length) && <div className="domain-routing-options"><h3>Kies één route voor het hoofddomein</h3><div>{domain.routingOptions?.map(option => <article key={option.id}><strong>{option.id === 'www-cname' ? 'Via www' : option.id === 'ns-cloudflare' ? 'Via Cloudflare' : 'Via CNAME-flattening'}</strong><p>{option.note}</p><code>{option.type} {option.hostname}{option.value ? ` → ${option.value}` : ''}</code></article>)}</div></div>}
             <RegistrarHelp domain={domain} />
             <div className="form-actions">
               <button type="button" onClick={() => void check(domain.id)} disabled={busy === domain.id}>

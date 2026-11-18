@@ -60,6 +60,8 @@ export const apiPaths = {
   env: (id: string) => `${API_PREFIX}/projects/${encodeURIComponent(id)}/env`,
   envVar: (id: string, envId: string) =>
     `${API_PREFIX}/projects/${encodeURIComponent(id)}/env/${encodeURIComponent(envId)}`,
+  projectDatabase: (id: string) => `${API_PREFIX}/projects/${encodeURIComponent(id)}/database`,
+  migrations: (id: string) => `${API_PREFIX}/projects/${encodeURIComponent(id)}/migrations`,
 };
 
 export function isSafeSegment(value: string): boolean {
