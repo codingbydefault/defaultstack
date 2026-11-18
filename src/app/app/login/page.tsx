@@ -16,6 +16,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <main className="login-shell" lang="nl">
       <div className="ambient a" />
       <div className="ambient b" />
+      <div className="floating-shapes login-shapes" aria-hidden="true"><span /><span /><span /></div>
       <Link href="/" className="brand login-brand">
         <span className="brand-icon"><i /><i /><i /></span>
         <span>Default<span className="accent">Stackr</span><small>by CodedByDefault</small></span>

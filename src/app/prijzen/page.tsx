@@ -5,6 +5,7 @@ import { PricingCards } from '@/components/pricing-cards';
 export default function PricingPage() {
   return <main className="pricing-page" lang="nl">
     <div className="pricing-ambient" aria-hidden="true" />
+    <div className="floating-shapes pricing-shapes" aria-hidden="true"><span /><span /><span /></div>
     <header className="nav wrap pricing-nav"><Link href="/" className="brand"><span className="brand-icon"><i /><i /><i /></span><span>Default<span className="accent">Stackr</span><small>by CodedByDefault</small></span></Link><nav><Link href="/">Home</Link><Link href="/prijzen" aria-current="page">Pakketten</Link></nav><Link href="/app" className="outline nav-cta">Dashboard ↗</Link></header>
     <section className="pricing-hero wrap"><p className="console-eyebrow"><span className="pulse-dot" /> DEFAULTSTACKR / PAKKETTEN</p><h1>Ruimte om te bouwen.<br /><em>Een prijs die meegroeit.</em></h1><p>Kies gratis of betaal per maand of jaar. Een projectplaats is een project dat tegelijk online staat; een nieuwe versie publiceren gebruikt geen extra plaats.</p><div className="pricing-notice">De pakketten zijn vastgesteld. Abonnementen en automatische verbruikskosten worden pas beschikbaar nadat rechten, meting en Stripe-koppeling op het platform werken.</div></section>
     <PricingCards />

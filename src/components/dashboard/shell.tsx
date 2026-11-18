@@ -20,6 +20,7 @@ export function Shell({ mock, children }: { mock: boolean; children: React.React
     <main className="platform-console" lang="nl">
       <div className="console-ambient ambient-one" aria-hidden="true" />
       <div className="console-ambient ambient-two" aria-hidden="true" />
+      <div className="floating-shapes console-shapes" aria-hidden="true"><span /><span /><span /></div>
       <aside className="console-sidebar">
         <Link href="/app" className="console-brand">
           <span className="brand-icon"><i /><i /><i /></span>
