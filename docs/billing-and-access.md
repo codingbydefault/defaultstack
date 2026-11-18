@@ -2,6 +2,8 @@
 
 Status: catalogus en interface voorbereid; betaalde abonnementen en rechten voor individuele gebruikers zijn nog niet live.
 
+De Vercel-preview van `codex/dashboard-real-api` gebruikt een aparte demo-inlog en mockprojecten. Deze preview is niet verbonden met de thuisserver of de Stripe-checkout. De productieomgeving krijgt deze demo-instellingen niet.
+
 ## Pakketten
 
 | Pakket | Maand | Jaar | Gelijktijdig actieve projecten | Totale databaseopslag |
