@@ -10,9 +10,16 @@ import { EnvPanel } from '@/components/dashboard/env-panel';
 import { chipClass, projectStatusLabel } from '@/components/dashboard/format';
 import { SettingsPanel } from '@/components/dashboard/settings-panel';
 import { MigrationsPanel } from '@/components/dashboard/migrations-panel';
+import { CodePanel } from '@/components/dashboard/code-panel';
+import { AnalyticsPanel } from '@/components/dashboard/analytics-panel';
+import { OverviewPanel } from '@/components/dashboard/overview-panel';
 
 const tabs = [
+  ['overview', 'Overzicht'],
   ['deployments', 'Uitrollen'],
+  ['code', 'Code'],
+  ['logs', 'Logs'],
+  ['analytics', 'Analytics'],
   ['domains', 'DNS-instellingen'],
   ['env', 'Omgevingsvariabelen'],
   ['migrations', 'SQL-migraties'],
@@ -53,7 +60,11 @@ export function ProjectScreen({ projectId, tab }: { projectId: string; tab: Proj
           </Link>
         ))}
       </div>
-      {tab === 'deployments' && <DeploymentsPanel projectId={project.id} />}
+      {tab === 'overview' && <OverviewPanel project={project} />}
+      {tab === 'deployments' && <DeploymentsPanel projectId={project.id} canDeploy={project.owner.kind === 'team'} />}
+      {tab === 'code' && <CodePanel projectId={project.id} repoUrl={project.repoUrl} />}
+      {tab === 'logs' && <DeploymentsPanel projectId={project.id} logsOnly canDeploy={project.owner.kind === 'team'} />}
+      {tab === 'analytics' && <AnalyticsPanel projectId={project.id} />}
       {tab === 'domains' && <DomainsPanel projectId={project.id} previewHost={project.previewHostname} />}
       {tab === 'env' && <EnvPanel projectId={project.id} />}
       {tab === 'migrations' && <MigrationsPanel projectId={project.id} />}

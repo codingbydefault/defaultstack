@@ -74,7 +74,7 @@ export function NewProjectForm() {
         <label>Build-commando<input required value={form.buildCommand} onChange={event => set('buildCommand', event.target.value)} /></label>
         <label>Start-commando<input required value={form.startCommand} onChange={event => set('startCommand', event.target.value)} /></label>
         <label>Healthcheck-pad<input required value={form.healthPath} onChange={event => set('healthPath', event.target.value)} /></label>
-        <p className="field-hint">Het project komt bij het team van deze beheer-API. Het preview-adres wordt <code>&lt;slug&gt;.defaultstackr.cloud</code>.</p>
+        <p className="field-hint">Je project krijgt het adres <code>&lt;projectadres&gt;.defaultstackr.cloud</code>. Nieuwe klantaccounts kunnen code en instellingen beheren; deployen volgt zodra de bouwomgeving veilig afgescheiden is.</p>
         {error && <p role="alert" className="db-error">{error}</p>}
         <div className="form-actions">
           <button className="primary" type="submit" disabled={busy}>{busy ? 'Bezig…' : 'Project aanmaken'}</button>
