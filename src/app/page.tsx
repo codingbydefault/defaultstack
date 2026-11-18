@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SiteFooter } from '@/components/site-footer';
 import { PublicAuthActions } from '@/components/public-auth-actions';
+import { ReviewsSection } from '@/components/reviews-section';
 
 const steps = [
   { number: '01', title: 'Verbind je code', text: 'Kies een repository en bepaal hoe je project wordt gebouwd.' },
@@ -36,6 +37,7 @@ export default function Home() {
           <a href="#werkwijze">Werkwijze</a>
           <Link href="/prijzen">Pakketten</Link>
           <a href="#voortgang">Voortgang</a>
+          <a href="#reviews">Reviews</a>
         </nav>
         <PublicAuthActions />
       </header>
@@ -87,6 +89,7 @@ export default function Home() {
       <section className="landing-pricing wrap"><div><span className="section-label">/ FREE · PRO · BUSINESS</span><h2>Begin gratis.<br /><em>Groei als je wilt.</em></h2><p>Free biedt 3 actieve projecten en 2 GB databaseopslag. Pro biedt 10 projecten en 5 GB vanaf € 29 per maand of € 290 per jaar. Business begint bij € 59 per maand of € 590 per jaar, met extra verbruik op maat.</p><span className="landing-pricing-note">MAAND OF JAAR · STRIPE-AFREKENEN IN VOORBEREIDING</span><Link href="/prijzen" className="primary">Vergelijk de pakketten <span aria-hidden="true">↗</span></Link></div><div className="landing-pricing-art" aria-hidden="true"><span className="pricing-art-ring ring-a" /><span className="pricing-art-ring ring-b" /><span className="pricing-art-core">DS<span>R</span></span></div></section>
 
       <section className="landing-contact wrap" id="contact"><span className="section-label">/ BOUW MEE</span><h2>Jouw volgende idee<br /><em>begint hier.</em></h2><p>Wil je de ontwikkeling volgen of meedenken over het platform? We horen graag van je.</p><div><Link href="/app" className="primary">Open het portaal ↗</Link><a href="mailto:codedbydefault@gmail.com?subject=DefaultStackr%20contact" className="outline">Neem contact op ↗</a></div></section>
+      <ReviewsSection />
       <SiteFooter />
     </main>
   );

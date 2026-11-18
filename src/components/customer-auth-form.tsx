@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createAuthClient } from 'better-auth/react';
 
@@ -33,5 +34,6 @@ export function CustomerAuthForm({ initialMode = 'login', provider }: { initialM
     {error && <p role="alert" className="db-error">{error}</p>}
     <p className="auth-switch">{mode === 'login' ? 'Nog geen account?' : 'Heb je al een account?'} <button type="button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? 'Account aanmaken' : 'Inloggen'}</button></p>
     <p className="auth-disclaimer">GitHub is de standaard voor projecten. Met Google of e-mail kun je later GitHub aan je profiel koppelen.</p>
+    <p className="auth-disclaimer">Bekijk vóór het aanmaken van een account onze <Link href="/voorwaarden">algemene voorwaarden</Link> en <Link href="/privacy">privacyverklaring</Link>.</p>
   </div>;
 }

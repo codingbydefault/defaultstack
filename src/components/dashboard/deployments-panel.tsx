@@ -5,7 +5,7 @@ import { ApiError, dashboardApi } from '@/lib/api/client';
 import type { Deployment, LogLine } from '@/lib/api/types';
 import { chipClass, deploymentStatusLabel, formatWhen } from '@/components/dashboard/format';
 
-export function DeploymentsPanel({ projectId }: { projectId: string }) {
+export function DeploymentsPanel({ projectId, logsOnly = false, canDeploy = true }: { projectId: string; logsOnly?: boolean; canDeploy?: boolean }) {
   const [items, setItems] = useState<Deployment[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [lines, setLines] = useState<LogLine[]>([]);
@@ -94,12 +94,13 @@ export function DeploymentsPanel({ projectId }: { projectId: string }) {
     <div className="stack-gap">
       <div className="section-title">
         <div>
-          <h2>Uitrollen</h2>
-          <p>Status, logboek en een eerdere geslaagde uitrol terugzetten.</p>
+          <h2>{logsOnly ? 'Logs' : 'Uitrollen'}</h2>
+          <p>{logsOnly ? 'Bekijk de buildlogs van je uitrollen.' : 'Status, logboek en een eerdere geslaagde uitrol terugzetten.'}</p>
         </div>
-        <button type="button" className="primary" onClick={() => void redeploy()} disabled={busy !== ''}>Opnieuw uitrollen</button>
+        {!logsOnly && canDeploy && <button type="button" className="primary" onClick={() => void redeploy()} disabled={busy !== ''}>Opnieuw uitrollen</button>}
       </div>
       {error && <p role="alert" className="db-error">{error}</p>}
+      {!logsOnly && !canDeploy && <p className="console-callout">Je kunt je project en code al beheren. Deployen voor klantaccounts wordt beschikbaar zodra builds op de server veilig afgescheiden draaien.</p>}
       {items.length === 0 ? <div className="console-empty">Nog geen uitrol. Gebruik Opnieuw uitrollen om de branch te bouwen.</div> : (
         <ul className="deploy-list">
           {items.map(item => (
@@ -109,7 +110,7 @@ export function DeploymentsPanel({ projectId }: { projectId: string }) {
                 <strong>{item.commitMessage || 'Uitrol'}</strong>
                 <span>{item.commitSha ? item.commitSha.slice(0, 7) : item.branch} · {formatWhen(item.createdAt)}{item.current ? ' · huidig' : ''}</span>
               </button>
-              {item.status === 'ready' && !item.current && (
+              {!logsOnly && canDeploy && item.status === 'ready' && !item.current && (
                 confirming === item.id ? (
                   <div className="confirm-row">
                     <span>Deze uitrol terugzetten?</span>
