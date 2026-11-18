@@ -8,10 +8,10 @@ import "./brand.css";
 import "./tokens.css";
 import "./light-ui.css";
 import type { Metadata } from "next";
-import { SITE_URL } from "@/lib/site";
+import { PUBLIC_SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: new URL(PUBLIC_SITE_URL),
   alternates: { canonical: "./" },
   title: "DefaultStackr — Bouw. Beheer. Groei.",
   description:
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "DefaultStackr by CodedByDefault",
     description: "Eén werkruimte voor projecten, databases en uitrollen. Volg de ontwikkeling van DefaultStackr.",
     siteName: "DefaultStackr",
-    url: SITE_URL,
+    url: PUBLIC_SITE_URL,
     type: "website",
   },
 };

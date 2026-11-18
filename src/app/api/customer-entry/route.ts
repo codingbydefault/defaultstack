@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { customerAuth } from '@/lib/auth/customer';
 import { sessionCookieOptions } from '@/lib/auth/session';
+import { SITE_URL } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -20,13 +21,13 @@ function redirectToLogin(base: string, status: string) {
 }
 
 export async function POST(request: Request) {
-  const base = process.env.DEFAULTSTACKR_PUBLIC_URL;
+  const base = process.env.DEFAULTSTACKR_PUBLIC_URL || SITE_URL;
   const auth = customerAuth();
-  if (!base || !auth) return Response.json({ error: 'Klantaanmelding is nog niet beschikbaar.' }, { status: 503 });
   const origin = request.headers.get('origin');
   if (!origin || (!ALLOWED_ORIGINS.has(origin) && origin !== new URL(base).origin)) {
     return Response.json({ error: 'Ongeldige herkomst.' }, { status: 403 });
   }
+  if (!auth) return redirectToLogin(base, 'unavailable');
   let form: FormData;
   try { form = await request.formData(); } catch { return redirectToLogin(base, 'invalid'); }
   const mode = form.get('mode');

@@ -79,8 +79,29 @@ try {
     redirect: 'manual',
   });
   assert.equal(switchToCustomer.status, 303);
-  assert.equal(switchToCustomer.headers.get('location'), `${base}/app/login?provider=github`);
+  assert.equal(switchToCustomer.headers.get('location'), `${base}/app/login?result=unavailable`);
   assert.match(switchToCustomer.headers.get('set-cookie') || '', /ds_session=;.*Max-Age=0/i);
+  const customerStatus = await fetch(`${base}/api/customer-entry/status`, { headers: { Origin: 'https://defaultstackr.nl' } });
+  assert.equal(customerStatus.status, 200);
+  assert.equal(customerStatus.headers.get('access-control-allow-origin'), 'https://defaultstackr.nl');
+  assert.equal((await customerStatus.json()).available, false);
+  const publicSocial = await fetch(`${base}/api/customer-entry/social`, {
+    method: 'POST', headers: { Origin: 'https://defaultstackr.nl', 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'provider=github', redirect: 'manual',
+  });
+  assert.equal(publicSocial.status, 303, 'the public site must reach the customer login');
+  assert.equal(publicSocial.headers.get('location'), `${base}/app/login?result=unavailable`);
+  const publicEmail = await fetch(`${base}/api/customer-entry`, {
+    method: 'POST', headers: { Origin: 'https://defaultstackr.online', 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'mode=login&email=test%40example.com&password=long-test-password', redirect: 'manual',
+  });
+  assert.equal(publicEmail.status, 303);
+  assert.equal(publicEmail.headers.get('location'), `${base}/app/login?result=unavailable`);
+  const foreignSocial = await fetch(`${base}/api/customer-entry/social`, {
+    method: 'POST', headers: { Origin: 'https://foreign.example', 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'provider=github', redirect: 'manual',
+  });
+  assert.equal(foreignSocial.status, 403, 'other sites must not start a login');
 
   const projects = await (await fetch(`${base}/api/stack/v1/projects`, { headers })).json();
   assert.ok(projects.some(project => project.previewHostname === 'vitrine.defaultstackr.cloud'));
