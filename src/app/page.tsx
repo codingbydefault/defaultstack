@@ -3,6 +3,7 @@ import { SiteFooter } from '@/components/site-footer';
 import { PublicAuthActions } from '@/components/public-auth-actions';
 import { ReviewsSection } from '@/components/reviews-section';
 import { LandingWorkbench } from '@/components/landing-workbench';
+import { SiteMenu } from '@/components/site-menu';
 
 const steps = [
   { number: '01', title: 'Verbind je code', text: 'Kies een repository en bepaal hoe je project wordt gebouwd.' },
@@ -30,7 +31,7 @@ export default function Home() {
           <span className="brand-icon"><i /><i /><i /></span>
           <span>Default<span className="accent">Stackr</span><small>by CodedByDefault</small></span>
         </Link>
-        <nav aria-label="Hoofdnavigatie">
+        <nav className="desktop-nav" aria-label="Hoofdnavigatie">
           <a href="#platform">Platform</a>
           <a href="#werkwijze">Werkwijze</a>
           <Link href="/prijzen">Pakketten</Link>
@@ -38,6 +39,7 @@ export default function Home() {
           <a href="#reviews">Reviews</a>
         </nav>
         <PublicAuthActions />
+        <SiteMenu />
       </header>
 
       <section className="landing-hero wrap" aria-labelledby="landing-title">

@@ -1,6 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { sessionSecret } from '@/lib/auth/session';
 import { customerAuth } from '@/lib/auth/customer';
+import { SITE_URL } from '@/lib/site';
 
 export const GITHUB_COOKIE = 'ds_github';
 export const GITHUB_STATE_COOKIE = 'ds_github_state';
@@ -18,8 +19,8 @@ export function githubConfig() {
   const clientId = process.env.DEFAULTSTACKR_GITHUB_CLIENT_ID;
   const clientSecret = process.env.DEFAULTSTACKR_GITHUB_CLIENT_SECRET;
   const appSlug = process.env.DEFAULTSTACKR_GITHUB_APP_SLUG;
-  const publicUrl = process.env.DEFAULTSTACKR_PUBLIC_URL;
-  if (!clientId || !clientSecret || !appSlug || !publicUrl || !sessionSecret()) return null;
+  const publicUrl = process.env.DEFAULTSTACKR_PUBLIC_URL || SITE_URL;
+  if (!clientId || !clientSecret || !appSlug || !sessionSecret()) return null;
   if (!/^[a-z0-9-]{1,100}$/.test(appSlug) || !/^[A-Za-z0-9_]+$/.test(clientId)) return null;
   let origin: URL;
   try { origin = new URL(publicUrl); } catch { return null; }

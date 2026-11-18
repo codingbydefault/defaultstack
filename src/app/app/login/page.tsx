@@ -29,7 +29,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <span>Default<span className="accent">Stackr</span><small>by CodedByDefault</small></span>
       </Link>
       {admin === '1' ? <LoginForm configured={passwordHashConfigured() && Boolean(sessionSecret())} nextPath={destination} /> :
-        <section className="login-card customer-login-card"><p className="console-eyebrow">DEFAULTSTACKR / WERKRUIMTE</p><h1>Welkom bij jouw stack.</h1><p>Log in of maak een account om je projecten te beheren.</p>{result && <p role="alert" className="db-error">{result === 'invalid' ? 'Controleer je e-mailadres en wachtwoord.' : 'Aanmelden is mislukt. Probeer het opnieuw.'}</p>}<CustomerAuthForm provider={provider} /></section>}
+        <section className="login-card customer-login-card"><p className="console-eyebrow">DEFAULTSTACKR / WERKRUIMTE</p><h1>Welkom bij jouw stack.</h1><p>Log in of maak een account om je projecten te beheren.</p>{result && <p role="alert" className="db-error">{result === 'unavailable' ? 'Klantaanmelding wordt nog ingesteld op de server. Probeer het later opnieuw.' : result === 'invalid' ? 'Controleer je e-mailadres en wachtwoord.' : 'Aanmelden is mislukt. Probeer het opnieuw.'}</p>}<CustomerAuthForm provider={provider} /></section>}
     </main>
   );
 }

@@ -1,11 +1,11 @@
 import { betterAuth } from 'better-auth';
 import { Pool } from 'pg';
+import { SITE_URL } from '@/lib/site';
 
 export function customerAuthConfigured(): boolean {
   return Boolean(process.env.DEFAULTSTACKR_AUTH_DATABASE_URL
     && process.env.DEFAULTSTACKR_AUTH_SECRET
-    && process.env.DEFAULTSTACKR_AUTH_SECRET.length >= 32
-    && process.env.DEFAULTSTACKR_PUBLIC_URL);
+    && process.env.DEFAULTSTACKR_AUTH_SECRET.length >= 32);
 }
 
 function createCustomerAuth() {
@@ -15,9 +15,9 @@ function createCustomerAuth() {
   const googleSecret = process.env.DEFAULTSTACKR_GOOGLE_CLIENT_SECRET;
   return betterAuth({
     appName: 'DefaultStackr',
-    baseURL: process.env.DEFAULTSTACKR_PUBLIC_URL,
+    baseURL: process.env.DEFAULTSTACKR_PUBLIC_URL || SITE_URL,
     secret: process.env.DEFAULTSTACKR_AUTH_SECRET,
-    database: new Pool({ connectionString: process.env.DEFAULTSTACKR_AUTH_DATABASE_URL, max: 5 }),
+    database: new Pool({ connectionString: process.env.DEFAULTSTACKR_AUTH_DATABASE_URL, max: 5, connectionTimeoutMillis: 3000 }),
     emailAndPassword: { enabled: true, minPasswordLength: 10, maxPasswordLength: 200 },
     socialProviders: {
       ...(githubId && githubSecret ? { github: { clientId: githubId, clientSecret: githubSecret } } : {}),
