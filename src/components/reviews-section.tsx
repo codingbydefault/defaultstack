@@ -9,11 +9,16 @@ const cloud = 'https://www.defaultstackr.cloud';
 export function ReviewsSection() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [received, setReceived] = useState(false);
+  const [available, setAvailable] = useState(false);
 
   useEffect(() => {
     setReceived(new URLSearchParams(window.location.search).get('review') === 'received');
-    void fetch(`${cloud}/api/reviews`, { cache: 'no-store' }).then(response => response.ok ? response.json() : { reviews: [] })
-      .then(data => setReviews(Array.isArray(data.reviews) ? data.reviews : [])).catch(() => {});
+    void fetch(`${cloud}/api/reviews`, { cache: 'no-store' }).then(async response => {
+      if (!response.ok) return;
+      const data = await response.json();
+      setReviews(Array.isArray(data.reviews) ? data.reviews : []);
+      setAvailable(true);
+    }).catch(() => {});
   }, []);
 
   return <section className="reviews-section" id="reviews"><div className="wrap"><div className="landing-section-heading"><div><span className="section-label">/ ERVARINGEN</span><h2>Deel jouw ervaring.</h2></div><p>Reviews verschijnen pas na beoordeling. We tonen geen verzonnen testimonials.</p></div>
@@ -25,7 +30,8 @@ export function ReviewsSection() {
       <label className="review-message">Je ervaring<textarea name="body" required minLength={20} maxLength={1200} rows={4} placeholder="Vertel wat je hebt geprobeerd en wat beter kan." /></label>
       <label className="review-honeypot" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
       <p>Lees onze <Link href="/privacy">privacyverklaring</Link>. We beoordelen een review voordat die publiek verschijnt.</p>
-      <button type="submit" className="primary">Review insturen ↗</button>
+      <button type="submit" className="primary" disabled={!available}>Review insturen ↗</button>
+      {!available && <p role="status">Reviews insturen wordt beschikbaar zodra het cloudportaal is bijgewerkt.</p>}
       {received && <p role="status">Bedankt. Je review is ontvangen en wacht op beoordeling.</p>}
     </form></div>
   </div></section>;
