@@ -1,6 +1,6 @@
 import { ProjectScreen, type ProjectTab } from '@/components/dashboard/project-screen';
 
-const tabs: ProjectTab[] = ['deployments', 'domains', 'env', 'settings'];
+const tabs: ProjectTab[] = ['deployments', 'domains', 'env', 'migrations', 'settings'];
 
 export default async function ProjectPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);

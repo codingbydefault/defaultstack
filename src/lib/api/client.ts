@@ -9,6 +9,7 @@ import type {
   LogChunk,
   Project,
   ProjectInput,
+  Migration,
 } from '@/lib/api/types';
 
 export class ApiError extends Error {
@@ -76,4 +77,8 @@ export const dashboardApi = {
     request<EnvVar>(apiPaths.envVar(id, envId), { method: 'PATCH', body: JSON.stringify(input) }),
   deleteEnv: (id: string, envId: string) =>
     request<{ ok: true }>(apiPaths.envVar(id, envId), { method: 'DELETE' }),
+  projectDatabase: (id: string) => request<{ configured: boolean }>(apiPaths.projectDatabase(id)),
+  migrations: async (id: string) => list(await request<Migration[] | { items: Migration[] }>(apiPaths.migrations(id))),
+  applyMigration: (id: string, input: { name: string; sql: string }) =>
+    request<Migration>(apiPaths.migrations(id), { method: 'POST', body: JSON.stringify(input) }),
 };

@@ -32,6 +32,9 @@ export type Project = {
   branch: string;
   buildCommand: string;
   startCommand: string;
+  installCommand?: string;
+  healthPath?: string;
+  framework?: string;
   status: ProjectStatus;
   latestDeployment: LatestDeployment | null;
   primaryHostname: string | null;
@@ -46,6 +49,10 @@ export type ProjectInput = {
   branch: string;
   buildCommand: string;
   startCommand: string;
+  slug?: string;
+  installCommand?: string;
+  healthPath?: string;
+  framework?: string;
 };
 
 export type Deployment = {
@@ -125,4 +132,11 @@ export type EnvVarInput = {
 export type ApiErrorBody = {
   error: string;
   code?: string;
+};
+
+export type Migration = {
+  name: string;
+  checksum: string;
+  appliedAt: string;
+  alreadyApplied?: boolean;
 };

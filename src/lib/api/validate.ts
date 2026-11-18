@@ -1,6 +1,14 @@
 import type { DomainInput, DomainKind, DomainRedirect, EnvName, EnvVarInput, ProjectInput } from '@/lib/api/types';
 
 const HOSTNAME = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+const PROJECT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
+const RESERVED_PROJECT_SLUGS = new Set(['api', 'www', 'admin', 'mail', 'smtp', 'ftp', 'ns1', 'ns2', 'tunnel', 'fallback', 'origin', 'customers', 'cdn', 'static', 'web']);
+
+export function projectSlugError(value: string): string | null {
+  if (!PROJECT_SLUG.test(value)) return 'Gebruik 1 tot 40 kleine letters, cijfers of koppeltekens; begin en eindig met een letter of cijfer.';
+  if (RESERVED_PROJECT_SLUGS.has(value)) return 'Deze projectnaam is gereserveerd voor het platform. Kies een andere.';
+  return null;
+}
 
 export function normalizeHostname(input: string): string | null {
   const value = input.trim().toLowerCase().replace(/\.$/, '').replace(/^https?:\/\//, '').split('/')[0] ?? '';
@@ -28,8 +36,9 @@ export function slugify(name: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 40);
-  return slug || 'app';
+    .slice(0, 40)
+    .replace(/-+$/g, '');
+  return RESERVED_PROJECT_SLUGS.has(slug) ? `${slug}-app` : slug || 'app';
 }
 
 export function validateDomainInput(input: Partial<DomainInput>): { value: DomainInput; hostname: string } | { error: string } {
