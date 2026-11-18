@@ -9,7 +9,7 @@ const ORIGINS = new Set(['https://defaultstackr.nl', 'https://www.defaultstackr.
 
 export async function GET() {
   const db = siteDb();
-  if (!db) return Response.json({ reviews: [] }, { headers: { 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } });
+  if (!db) return Response.json({ error: 'Reviews zijn nog niet beschikbaar.' }, { status: 503, headers: { 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } });
   try {
     const result = await db.query("SELECT display_name, rating, body, created_at FROM site_reviews WHERE status = 'approved' ORDER BY reviewed_at DESC NULLS LAST, created_at DESC LIMIT 6");
     return Response.json({ reviews: result.rows.map(row => ({ name: row.display_name, rating: row.rating, body: row.body, createdAt: row.created_at })) }, { headers: { 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } });

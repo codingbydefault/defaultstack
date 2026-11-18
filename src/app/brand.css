@@ -423,6 +423,7 @@ body { background: var(--ds-night); color: var(--ds-text); font-family: Inter, u
 .review-form-shell form a { color: #dda5ff; }
 .review-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .review-form-shell button { justify-self: start; }
+.review-form-shell button:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
 .review-moderation { margin-top: 38px; border-top: 1px solid #67427f; padding-top: 27px; }
 .review-moderation article { margin: 13px 0; padding: 17px; border: 1px solid #684082; border-radius: 11px; background: #170e21; }
 .review-moderation article > div { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
