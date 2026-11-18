@@ -3,6 +3,7 @@ node_modules
 .env*
 !.env.example
 .vercel
+.hallmark/
 *.tsbuildinfo
 deploy/tls/cloudflare.ini
 deploy/dns/cloudflare-ddns.env

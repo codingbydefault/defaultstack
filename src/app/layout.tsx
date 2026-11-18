@@ -1,5 +1,12 @@
+import "@fontsource/outfit/500.css";
+import "@fontsource/outfit/600.css";
+import "@fontsource/onest/400.css";
+import "@fontsource/onest/500.css";
+import "@fontsource/onest/600.css";
 import "./globals.css";
 import "./brand.css";
+import "./tokens.css";
+import "./light-ui.css";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
 

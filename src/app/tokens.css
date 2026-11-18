@@ -1,0 +1,48 @@
+/* Hallmark · DefaultStackr · light Ultraviolet system · v2.0.0 */
+:root {
+  --color-canvas: #f5f6f9;
+  --color-paper: #ffffff;
+  --color-paper-soft: #eef1f6;
+  --color-paper-hover: #e8ebf3;
+  --color-ink: #171923;
+  --color-ink-soft: #343947;
+  --color-muted: #626b7a;
+  --color-rule: #dce1e9;
+  --color-accent: #6d36e9;
+  --color-accent-deep: #5223bf;
+  --color-accent-soft: #eee8ff;
+  --color-accent-ink: #fdfbff;
+  --color-focus: #7138ef;
+  --color-dark: #181b25;
+  --color-dark-raised: #242834;
+  --color-dark-rule: #373d4d;
+  --color-dark-ink: #f1f2f7;
+  --color-dark-muted: #b5bece;
+  --color-good: #177052;
+  --color-warn: #8b5d13;
+  --color-bad: #a33d53;
+  --color-shadow: #2228441c;
+  --color-backdrop: #17192399;
+  --font-display: "Outfit", "Onest", sans-serif;
+  --font-body: "Onest", sans-serif;
+  --font-code: ui-monospace, SFMono-Regular, Consolas, monospace;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+  --radius-control: 12px;
+  --radius-panel: 18px;
+  --duration-short: 180ms;
+  --ease-out: cubic-bezier(.2,.8,.2,1);
+  --ds-night: var(--color-canvas);
+  --ds-panel: var(--color-paper);
+  --ds-panel-raised: var(--color-paper-soft);
+  --ds-line: var(--color-rule);
+  --ds-purple: var(--color-accent);
+  --ds-purple-soft: var(--color-accent-deep);
+  --ds-text: var(--color-ink);
+  --ds-muted: var(--color-muted);
+}
