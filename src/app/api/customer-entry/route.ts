@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { customerAuth } from '@/lib/auth/customer';
+import { sessionCookieOptions } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
     const response = NextResponse.redirect(new URL('/app', base), { status: 303 });
     response.headers.set('Cache-Control', 'no-store');
     for (const cookie of result.headers.getSetCookie()) response.headers.append('set-cookie', cookie);
+    response.cookies.set({ ...sessionCookieOptions, value: '', maxAge: 0 });
     return response;
   } catch {
     return redirectToLogin(base, 'failed');

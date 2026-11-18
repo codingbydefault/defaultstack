@@ -13,8 +13,11 @@ export const dynamic = 'force-dynamic';
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; admin?: string; provider?: string; result?: string }> }) {
   const [{ next, admin, provider, result }, jar] = await Promise.all([searchParams, cookies()]);
   const destination = safeNextPath(next);
-  if (await readSession(jar.get(SESSION_COOKIE)?.value)) redirect(destination);
-  if (await customerSession(await headers())) redirect(destination);
+  if (admin === '1') {
+    if (await readSession(jar.get(SESSION_COOKIE)?.value)) redirect(destination);
+  } else if (await customerSession(await headers())) {
+    redirect(destination);
+  }
 
   return (
     <main className="login-shell" lang="nl">

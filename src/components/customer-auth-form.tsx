@@ -20,8 +20,8 @@ export function CustomerAuthForm({ initialMode = 'login', provider }: { initialM
 
   return <div className="customer-auth-form">
     <div className="auth-social-list">
-      <a href={`${cloud}/app/login?provider=github`} className="auth-social auth-social-github"><span aria-hidden="true">⌘</span>Verder met GitHub <b aria-hidden="true">↗</b></a>
-      <a href={`${cloud}/app/login?provider=google`} className="auth-social auth-social-google"><span aria-hidden="true">G</span>Verder met Google <b aria-hidden="true">↗</b></a>
+      <form action={`${cloud}/api/customer-entry/social`} method="post"><input type="hidden" name="provider" value="github" /><button type="submit" className="auth-social auth-social-github"><span aria-hidden="true">⌘</span>Verder met GitHub <b aria-hidden="true">↗</b></button></form>
+      <form action={`${cloud}/api/customer-entry/social`} method="post"><input type="hidden" name="provider" value="google" /><button type="submit" className="auth-social auth-social-google"><span aria-hidden="true">G</span>Verder met Google <b aria-hidden="true">↗</b></button></form>
     </div>
     <div className="auth-divider"><span>OF MET E-MAIL</span></div>
     <form action={`${cloud}/api/customer-entry`} method="post">

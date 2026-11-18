@@ -250,10 +250,17 @@ body { background: var(--ds-night); color: var(--ds-text); font-family: Inter, u
 .customer-login-card { width: min(440px, calc(100vw - 32px)); margin: auto; }
 .customer-auth-form { display: grid; gap: 16px; margin-top: 24px; }
 .auth-social-list { display: grid; gap: 10px; }
+.auth-social-list form { margin: 0; }
 .auth-social { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 10px 14px; border: 1px solid #784a93; border-radius: 9px; background: #130b1c; color: #f6e9ff; text-decoration: none; font-weight: 650; transition: border-color .2s, box-shadow .2s, transform .2s; }
+.auth-social-list .auth-social { width: 100%; font: inherit; font-weight: 650; text-align: left; cursor: pointer; }
 .auth-social:hover, .auth-social:focus-visible { border-color: #d99dff; box-shadow: 0 0 23px #a951e45c; transform: translateY(-2px); }
 .auth-social span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 6px; background: #6b348d; }
 .auth-social b { margin-left: auto; }
+.project-slug-field { display: grid; gap: 7px; }
+.project-slug-field label { display: grid; gap: 7px; }
+.project-slug-field .field-hint { overflow-wrap: anywhere; }
+.platform-console .slug-reset { justify-self: start; border: 0; padding: 2px 0; background: none; color: #dba0ff; font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.platform-console .slug-reset:hover { color: #f6dcff; }
 .auth-divider { display: flex; align-items: center; gap: 12px; color: #a58bb7; font-size: 10px; letter-spacing: .14em; }
 .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #674477; }
 .customer-auth-form form { display: grid; gap: 13px; }

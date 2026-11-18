@@ -15,9 +15,15 @@ export function NewProjectForm() {
   const [slugEdited, setSlugEdited] = useState(false);
 
   function set<K extends keyof typeof initial>(key: K, value: string) {
-    setForm(current => key === 'name' && !slugEdited
+    setForm(current => key === 'name' && (!slugEdited || Boolean(projectSlugError(current.slug)))
       ? { ...current, name: value, slug: slugify(value) }
       : { ...current, [key]: value });
+  }
+
+  function resetSlug() {
+    setForm(current => ({ ...current, slug: slugify(current.name) }));
+    setSlugEdited(false);
+    setError('');
   }
 
   async function submit(event: FormEvent) {
@@ -57,7 +63,11 @@ export function NewProjectForm() {
       <GitHubPanel onSelect={selectRepo} />
       <form className="console-section form-grid" onSubmit={submit}>
         <label>Naam<input required minLength={2} maxLength={40} value={form.name} onChange={event => set('name', event.target.value)} /></label>
-        <label>Projectnaam voor het adres<input required pattern="[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?" maxLength={40} placeholder="plainwork" value={form.slug} onChange={event => { setSlugEdited(true); set('slug', event.target.value.trim().toLowerCase()); }} /></label>
+        <div className="project-slug-field">
+          <label>Projectadres (alleen de naam)<input required pattern="[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?" maxLength={40} placeholder="plainwork" value={form.slug} onChange={event => { setSlugEdited(true); set('slug', event.target.value.trim().toLowerCase()); }} /></label>
+          <p className="field-hint">{form.slug || 'jouw-project'}.defaultstackr.cloud · Plak de GitHub-link hieronder bij Repository-URL.</p>
+          {slugEdited && <button className="slug-reset" type="button" onClick={resetSlug}>Gebruik de naam als projectadres</button>}
+        </div>
         <label>Repository-URL<input required type="url" inputMode="url" placeholder="https://github.com/team/app" value={form.repoUrl} onChange={event => set('repoUrl', event.target.value)} /></label>
         <label>Branch<input required value={form.branch} onChange={event => set('branch', event.target.value)} /></label>
         <label>Installatiecommando<input required value={form.installCommand} onChange={event => set('installCommand', event.target.value)} /></label>

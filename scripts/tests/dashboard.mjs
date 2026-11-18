@@ -19,6 +19,7 @@ const server = spawn(process.execPath, ['scripts/start-standalone.mjs'], {
     DEFAULTSTACKR_MOCK: 'true',
     DEFAULTSTACKR_API_URL: 'http://127.0.0.1:3000',
     DEFAULTSTACKR_API_KEY: apiKey,
+    DEFAULTSTACKR_PUBLIC_URL: base,
     DEFAULTSTACKR_ADMIN_PASSWORD_HASH: passwordHash,
     DEFAULTSTACKR_SESSION_SECRET: 'test-session-secret-value',
   },
@@ -67,6 +68,19 @@ try {
   assert.equal(login.status, 200);
   const cookie = cookieHeader(login);
   const headers = { cookie, Origin: base };
+
+  const customerLogin = await fetch(`${base}/app/login?provider=github`, { headers: { cookie }, redirect: 'manual' });
+  assert.equal(customerLogin.status, 200, 'an admin session must not intercept customer login');
+  assert.match(await customerLogin.text(), /Verder met GitHub/);
+  const switchToCustomer = await fetch(`${base}/api/customer-entry/social`, {
+    method: 'POST',
+    headers: { cookie, Origin: base, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'provider=github',
+    redirect: 'manual',
+  });
+  assert.equal(switchToCustomer.status, 303);
+  assert.equal(switchToCustomer.headers.get('location'), `${base}/app/login?provider=github`);
+  assert.match(switchToCustomer.headers.get('set-cookie') || '', /ds_session=;.*Max-Age=0/i);
 
   const projects = await (await fetch(`${base}/api/stack/v1/projects`, { headers })).json();
   assert.ok(projects.some(project => project.previewHostname === 'vitrine.defaultstackr.cloud'));
