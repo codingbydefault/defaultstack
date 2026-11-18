@@ -1,4 +1,4 @@
-import type { Deployment, DnsRecord, Domain, EnvName, EnvVar, Project, ProjectInput } from '@/lib/api/types';
+import type { Deployment, DnsRecord, Domain, DomainRoutingOption, EnvName, EnvVar, Project, ProjectInput } from '@/lib/api/types';
 import { slugify } from '@/lib/api/validate';
 
 type Row = Record<string, unknown>;
@@ -44,7 +44,7 @@ function toDeployment(raw: Row, slug: string, project: Row): Deployment {
   };
 }
 
-function toProject(raw: Row, latest?: Row): Project {
+function toProject(raw: Row, latest?: Row, actorUserId: string | null = null): Project {
   const slug = string(raw.slug);
   const deployment = latest ? toDeployment(latest, slug, raw) : null;
   return {
@@ -62,7 +62,7 @@ function toProject(raw: Row, latest?: Row): Project {
     latestDeployment: deployment ? { id: deployment.id, status: deployment.status, createdAt: deployment.createdAt, commitMessage: null } : null,
     primaryHostname: null,
     previewHostname: `${slug}.defaultstackr.cloud`,
-    owner: { id: 'admin', name: 'CodedByDefault', kind: 'team' },
+    owner: actorUserId ? { id: actorUserId, name: 'Jij', kind: 'user' } : { id: 'admin', name: 'CodedByDefault', kind: 'team' },
     createdAt: date(raw.created_at),
   };
 }
@@ -88,6 +88,16 @@ function toRecords(value: unknown): DnsRecord[] {
   });
 }
 
+function toRoutingOptions(value: unknown): DomainRoutingOption[] {
+  const options = list(row(row(value).routing).apex_options);
+  return options.flatMap(option => {
+    const type = string(option.type);
+    const hostname = string(option.name);
+    if ((type !== 'CNAME' && type !== 'NS') || !hostname) return [];
+    return [{ id: string(option.id, hostname), type, hostname, value: typeof option.value === 'string' ? option.value : null, note: string(option.note) }];
+  });
+}
+
 function toDomain(raw: Row, records: unknown): Domain {
   const status = string(raw.status);
   const hostname = string(raw.hostname);
@@ -105,6 +115,7 @@ function toDomain(raw: Row, records: unknown): Domain {
       checkedAt: raw.last_checked_at ? string(raw.last_checked_at) : null,
     },
     records: toRecords(records),
+    routingOptions: toRoutingOptions(records),
   };
 }
 
@@ -120,7 +131,7 @@ function toEnv(raw: Row): EnvVar {
   };
 }
 
-export async function handleRealApi(request: Request, segments: string[]): Promise<Response> {
+export async function handleRealApi(request: Request, segments: string[], actorUserId: string | null = null): Promise<Response> {
   const base = process.env.DEFAULTSTACKR_API_URL;
   const apiKey = process.env.DEFAULTSTACKR_API_KEY;
   if (!base || !apiKey) {
@@ -141,7 +152,7 @@ export async function handleRealApi(request: Request, segments: string[]): Promi
     try {
       upstream = await fetch(target, {
         method,
-        headers: { Accept: 'application/json', Authorization: `Bearer ${key}`, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+        headers: { Accept: 'application/json', Authorization: `Bearer ${key}`, ...(actorUserId ? { 'X-Defaultstackr-User-Id': actorUserId } : {}), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
         body: body === undefined ? undefined : JSON.stringify(body),
         cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15_000),
       });
@@ -165,7 +176,7 @@ export async function handleRealApi(request: Request, segments: string[]): Promi
       const projects = list(await call(projectPath));
       return response(await Promise.all(projects.map(async project => {
         const deployments = list(await call(`api/projects/${encodeURIComponent(string(project.slug))}/deployments`));
-        return toProject(project, deployments[0]);
+        return toProject(project, deployments[0], actorUserId);
       })));
     }
     if (!slug && method === 'POST') {
@@ -177,7 +188,7 @@ export async function handleRealApi(request: Request, segments: string[]): Promi
         install_command: input.installCommand || 'npm ci', build_command: input.buildCommand,
         start_command: input.startCommand, health_path: input.healthPath || '/',
       }));
-      return response(toProject(row(created.project)), 201);
+      return response(toProject(row(created.project), undefined, actorUserId), 201);
     }
     if (!slug) return response({ error: 'Onbekende API-route.' }, 404);
     if (section === 'database' && !item && method === 'GET') {
@@ -203,7 +214,7 @@ export async function handleRealApi(request: Request, segments: string[]): Promi
     if (!section && method === 'GET') {
       const project = row(await call(projectPath));
       const deployments = list(await call(`${projectPath}/deployments`));
-      return response(toProject(project, deployments[0]));
+      return response(toProject(project, deployments[0], actorUserId));
     }
     if (!section && method === 'PATCH') {
       const input = row(await request.json());
@@ -211,7 +222,7 @@ export async function handleRealApi(request: Request, segments: string[]): Promi
         name: input.name, repo_url: input.repoUrl, branch: input.branch,
         build_command: input.buildCommand, start_command: input.startCommand,
       }));
-      return response(toProject(project));
+      return response(toProject(project, undefined, actorUserId));
     }
     if (!section && method === 'DELETE') {
       await call(projectPath, 'DELETE');

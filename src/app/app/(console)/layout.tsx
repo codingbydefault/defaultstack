@@ -1,9 +1,11 @@
 import { Shell } from '@/components/dashboard/shell';
-import { requireSession } from '@/lib/auth/guard';
+import { redirectToLogin } from '@/lib/auth/guard';
+import { portalIdentity } from '@/lib/auth/portal';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ConsoleLayout({ children }: { children: React.ReactNode }) {
-  await requireSession();
-  return <Shell mock={process.env.DEFAULTSTACKR_MOCK === 'true'}>{children}</Shell>;
+  const identity = await portalIdentity();
+  if (!identity) redirectToLogin(null);
+  return <Shell mock={process.env.DEFAULTSTACKR_MOCK === 'true'} identity={identity}>{children}</Shell>;
 }

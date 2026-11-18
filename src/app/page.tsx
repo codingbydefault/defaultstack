@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { SiteFooter } from '@/components/site-footer';
+import { PublicAuthActions } from '@/components/public-auth-actions';
 
 const steps = [
   { number: '01', title: 'Verbind je code', text: 'Kies een repository en bepaal hoe je project wordt gebouwd.' },
@@ -36,7 +37,7 @@ export default function Home() {
           <Link href="/prijzen">Pakketten</Link>
           <a href="#voortgang">Voortgang</a>
         </nav>
-        <Link href="/app" className="outline nav-cta">Open portaal <span aria-hidden="true">↗</span></Link>
+        <PublicAuthActions />
       </header>
 
       <section className="landing-hero wrap" aria-labelledby="landing-title">

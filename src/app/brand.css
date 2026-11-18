@@ -235,8 +235,69 @@ body { background: var(--ds-night); color: var(--ds-text); font-family: Inter, u
 .login-shapes span:nth-child(1) { top: 12%; right: 8%; width: 330px; opacity: .42; }
 .login-shapes span:nth-child(2) { bottom: -85px; left: -95px; width: 270px; opacity: .4; }
 .login-shapes span:nth-child(3) { bottom: 12%; right: 10%; width: 170px; opacity: .28; }
+.public-auth-actions { display: flex; align-items: center; gap: 10px; }
+.public-auth-actions button, .public-auth-actions select { font: inherit; cursor: pointer; }
+.language-control select { appearance: none; border: 1px solid #6c477f; border-radius: 8px; background: #170c20; color: #e8d2f8; padding: 10px 13px; font-size: 12px; }
+.auth-nav-login { border: 1px solid #8652a4; border-radius: 8px; background: #2b153d55; color: #f5e7ff; padding: 11px 17px; transition: border-color .2s, box-shadow .2s; }
+.auth-nav-login:hover, .auth-nav-login:focus-visible { border-color: #dda3ff; box-shadow: 0 0 24px #a85bde6b; }
+.auth-nav-register { border-radius: 8px; padding: 11px 17px; font-size: 12px; }
+.auth-dialog { width: min(450px, calc(100vw - 32px)); max-height: calc(100vh - 32px); margin: auto; padding: 0; border: 1px solid #aa6bcd; border-radius: 18px; background: linear-gradient(155deg, #281432, #100a17 85%); color: #f9efff; box-shadow: 0 30px 110px #000b, 0 0 55px #a448da55; }
+.auth-dialog::backdrop { background: #050309c9; backdrop-filter: blur(8px); }
+.auth-dialog-inner { position: relative; padding: 32px; }
+.auth-dialog-close { position: absolute; top: 14px; right: 16px; border: 0; background: transparent; color: #ead0ff; font-size: 27px; }
+.auth-dialog h2 { margin: 12px 0; font-size: 30px; letter-spacing: -.05em; }
+.auth-dialog-inner>p { color: #bba7ca; font-size: 13px; line-height: 1.55; }
+.customer-login-card { width: min(440px, calc(100vw - 32px)); margin: auto; }
+.customer-auth-form { display: grid; gap: 16px; margin-top: 24px; }
+.auth-social-list { display: grid; gap: 10px; }
+.auth-social { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 10px 14px; border: 1px solid #784a93; border-radius: 9px; background: #130b1c; color: #f6e9ff; text-decoration: none; font-weight: 650; transition: border-color .2s, box-shadow .2s, transform .2s; }
+.auth-social:hover, .auth-social:focus-visible { border-color: #d99dff; box-shadow: 0 0 23px #a951e45c; transform: translateY(-2px); }
+.auth-social span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 6px; background: #6b348d; }
+.auth-social b { margin-left: auto; }
+.auth-divider { display: flex; align-items: center; gap: 12px; color: #a58bb7; font-size: 10px; letter-spacing: .14em; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #674477; }
+.customer-auth-form form { display: grid; gap: 13px; }
+.customer-auth-form label { display: grid; gap: 6px; color: #ddc7ed; font-size: 12px; }
+.customer-auth-form input { width: 100%; padding: 12px; border: 1px solid #7c5294; border-radius: 8px; background: #0c0812; color: #f7edff; font: inherit; }
+.customer-auth-form input:focus-visible { outline: 2px solid #d99dff; outline-offset: 2px; }
+.customer-auth-form .primary { width: 100%; display: flex; justify-content: space-between; border-radius: 8px; padding: 13px 16px; font-size: 13px; }
+.auth-switch, .auth-disclaimer { margin: 0; color: #ae9abb; font-size: 12px; line-height: 1.5; }
+.auth-switch button { border: 0; background: none; color: #dfa8ff; font: inherit; text-decoration: underline; cursor: pointer; }
+.admin-entry { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.admin-entry .primary { white-space: nowrap; }
+.admin-page h1 { margin: 15px 0; font-size: clamp(32px, 4vw, 50px); }
+.admin-page>p:not(.console-eyebrow) { color: #c5aed3; }
+.admin-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin-top: 28px; }
+.admin-grid a { position: relative; display: grid; gap: 11px; padding: 24px; border: 1px solid #795193; border-radius: 14px; background: linear-gradient(145deg, #26132e, #100b17); color: #f9efff; text-decoration: none; transition: border-color .2s, box-shadow .2s, transform .2s; }
+.admin-grid a:hover, .admin-grid a:focus-visible { border-color: #d79bff; box-shadow: 0 0 25px #aa55dd50; transform: translateY(-3px); }
+.admin-grid span { color: #cb8ff2; font-size: 10px; letter-spacing: .16em; }
+.admin-grid strong { font-size: 20px; }
+.admin-grid p { color: #bca8c9; font-size: 12px; line-height: 1.55; }
+.admin-grid b { justify-self: end; }
+@media (max-width: 900px) { .public-auth-actions { gap: 6px; } .auth-nav-register { padding: 10px; } .admin-grid { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .public-auth-actions { flex-wrap: wrap; justify-content: flex-end; } .auth-nav-register, .auth-nav-login { padding: 8px; font-size: 10px; } .auth-dialog-inner { padding: 25px 20px; } .admin-entry { align-items: flex-start; flex-direction: column; } }
 .pricing-page { background: var(--ds-night); }
 .site-footer { background: var(--ds-night); }
+.mail-page { position: relative; max-width: 1120px; }
+.mail-page h1 { font-size: clamp(32px, 4vw, 50px); letter-spacing: -.05em; margin: 15px 0; }
+.mail-intro { max-width: 750px; color: #c3aecf; line-height: 1.7; }
+.mail-plan-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 34px 0; }
+.mail-plan { min-width: 0; border: 1px solid #764b90; border-radius: 15px; padding: 24px; background: linear-gradient(145deg, #25122e, #100a18); box-shadow: 0 16px 40px #0004; }
+.mail-plan>span { display: block; color: #ca8cef; letter-spacing: .18em; font-size: 10px; font-weight: 700; }
+.mail-plan strong { display: block; margin: 16px 0 12px; font-size: 23px; color: #f4dfff; }
+.mail-plan p { margin: 0; color: #baa6c8; line-height: 1.6; }
+.mail-status { display: flex; align-items: center; gap: 22px; padding: 25px; border: 1px solid #794b96; border-radius: 15px; background: #1b0d25; }
+.mail-status-icon { display: grid; place-items: center; flex: 0 0 52px; height: 52px; border-radius: 12px; background: #783594; color: #f5dcff; font-size: 26px; }
+.mail-status h2 { margin: 0 0 7px; font-size: 18px; }
+.mail-status p { margin: 0; color: #baa6c8; line-height: 1.6; }
+.mail-status .outline { margin-left: auto; white-space: nowrap; }
+.domain-routing-options { margin: 23px 0; }
+.domain-routing-options h3 { margin: 0 0 14px; font-size: 17px; }
+.domain-routing-options>div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.domain-routing-options article { min-width: 0; padding: 17px; border: 1px solid #754c8b; border-radius: 11px; background: #1a1022; }
+.domain-routing-options strong { color: #edc8ff; }
+.domain-routing-options p { color: #b9a7c6; line-height: 1.5; font-size: 12px; }
+.domain-routing-options code { display: block; overflow-wrap: anywhere; color: #f4e5ff; font-size: 11px; }
 
 @media (max-width: 1080px) {
   .landing-hero { grid-template-columns: 1fr 1fr; gap: 22px; }
@@ -244,6 +305,9 @@ body { background: var(--ds-night); color: var(--ds-text); font-family: Inter, u
   .landing-float { display: none; }
 }
 @media (max-width: 800px) {
+  .mail-plan-grid, .domain-routing-options>div { grid-template-columns: 1fr; }
+  .mail-status { flex-wrap: wrap; }
+  .mail-status .outline { margin-left: 0; }
   .landing .wrap { width: min(100% - 36px, 1220px); }
   .landing-nav { height: 78px; }
   .landing-hero { display: flex; flex-direction: column; align-items: stretch; min-height: 0; padding-top: 70px; padding-bottom: 75px; }
@@ -261,6 +325,8 @@ body { background: var(--ds-night); color: var(--ds-text); font-family: Inter, u
   .platform-console .console-header-actions { gap: 10px; }
 }
 @media (max-width: 520px) {
+  .landing-nav, .pricing-nav { height: auto; min-height: 108px; flex-wrap: wrap; padding: 12px 0; row-gap: 8px; }
+  .landing-nav .public-auth-actions, .pricing-nav .public-auth-actions { width: 100%; justify-content: flex-end; flex-wrap: nowrap; }
   .landing-hero { padding-top: 53px; }
   .landing-hero h1 { font-size: clamp(50px, 13vw, 68px); }
   .landing-hero-copy>p { font-size: 15px; }

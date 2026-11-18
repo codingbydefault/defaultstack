@@ -3,15 +3,17 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import type { PortalIdentity } from '@/lib/auth/portal';
 
-export function Shell({ mock, children }: { mock: boolean; children: React.ReactNode }) {
+export function Shell({ mock, identity, children }: { mock: boolean; identity: PortalIdentity; children: React.ReactNode }) {
   const pathname = usePathname();
   const [leaving, setLeaving] = useState(false);
   const projectsActive = pathname === '/app' || pathname.startsWith('/app/projects');
-  const pageLabel = pathname.startsWith('/app/projects/new') ? 'Nieuw project' : pathname.startsWith('/app/projects/') ? 'Projectdetails' : 'Overzicht';
+  const pageLabel = pathname.startsWith('/app/projects/new') ? 'Nieuw project' : pathname.startsWith('/app/projects/') ? 'Projectdetails' : pathname === '/app/mail' ? 'E-mail' : pathname === '/app/admin' ? 'Beheer' : pathname === '/app/profile' ? 'Profiel' : 'Overzicht';
 
   async function logout() {
     setLeaving(true);
+    if (identity.kind === 'customer') await fetch('/api/auth/sign-out', { method: 'POST' });
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.assign('/app/login');
   }
@@ -28,7 +30,7 @@ export function Shell({ mock, children }: { mock: boolean; children: React.React
         </Link>
         <div className="workspace-switch">
           <span className="workspace-avatar">D</span>
-          <div>DefaultStackr<small>Beheerwerkruimte</small></div>
+          <div>{identity.kind === 'admin' ? 'DefaultStackr' : identity.name}<small>{identity.kind === 'admin' ? 'Beheerwerkruimte' : 'Jouw werkruimte'}</small></div>
           <span className="workspace-dot" />
         </div>
         <p className="console-label">WERKRUIMTE</p>
@@ -38,6 +40,9 @@ export function Shell({ mock, children }: { mock: boolean; children: React.React
           </Link>
           <Link href="/app/profile" className={pathname === '/app/profile' ? 'active' : ''} aria-current={pathname === '/app/profile' ? 'page' : undefined}>
             <span aria-hidden="true">◉</span>Profiel en valuta
+          </Link>
+          <Link href="/app/mail" className={pathname === '/app/mail' ? 'active' : ''} aria-current={pathname === '/app/mail' ? 'page' : undefined}>
+            <span aria-hidden="true">✉</span>E-mail
           </Link>
         </nav>
         <div className="sidebar-bottom">

@@ -1,14 +1,15 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { GITHUB_COOKIE, GITHUB_STATE_COOKIE, githubConfig, githubCookieOptions, githubJson, sealConnection } from '@/lib/github/connection';
-import { SESSION_COOKIE, readSession } from '@/lib/auth/session';
+import { portalIdentity } from '@/lib/auth/portal';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   const jar = await cookies();
   const config = githubConfig();
-  if (!config || !(await readSession(jar.get(SESSION_COOKIE)?.value))) return NextResponse.redirect(new URL('/app/login', request.url));
+  const identity = await portalIdentity();
+  if (!config || !identity) return NextResponse.redirect(new URL('/app/login', request.url));
   const query = new URL(request.url).searchParams;
   const state = query.get('state');
   const expected = jar.get(GITHUB_STATE_COOKIE)?.value;
@@ -31,6 +32,7 @@ export async function GET(request: Request) {
       expiresAt: typeof token.expires_in === 'number' ? Date.now() + token.expires_in * 1000 : undefined,
       githubId: user.id as number,
       login: user.login,
+      portalId: identity.kind === 'admin' ? 'admin' : identity.id,
     });
     const result = NextResponse.redirect(`${config.origin}/app/projects/new?github=connected`);
     result.cookies.set(GITHUB_COOKIE, sealed, githubCookieOptions);

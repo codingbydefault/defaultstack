@@ -93,6 +93,14 @@ export type DnsRecord = {
   flattening: boolean;
 };
 
+export type DomainRoutingOption = {
+  id: string;
+  type: 'CNAME' | 'NS';
+  hostname: string;
+  value: string | null;
+  note: string;
+};
+
 export type Domain = {
   id: string;
   projectId: string;
@@ -106,6 +114,8 @@ export type Domain = {
     checkedAt: string | null;
   };
   records: DnsRecord[];
+  /** Alternative apex routes supplied by the API; choose one, never all. */
+  routingOptions?: DomainRoutingOption[];
 };
 
 export type DomainInput = {

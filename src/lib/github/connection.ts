@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { sessionSecret } from '@/lib/auth/session';
+import { customerAuth } from '@/lib/auth/customer';
 
 export const GITHUB_COOKIE = 'ds_github';
 export const GITHUB_STATE_COOKIE = 'ds_github_state';
@@ -10,6 +11,7 @@ export type GitHubConnection = {
   expiresAt?: number;
   githubId: number;
   login: string;
+  portalId?: string;
 };
 
 export function githubConfig() {
@@ -74,6 +76,16 @@ export async function githubJson(path: string, token: string): Promise<unknown> 
   });
   if (!response.ok) throw new Error(`GitHub API: ${response.status}`);
   return response.json();
+}
+
+export async function githubCustomerToken(headers: Headers): Promise<string | null> {
+  const auth = customerAuth();
+  if (!auth) return null;
+  const accounts = await auth.api.listUserAccounts({ headers });
+  const github = accounts.find(account => account.providerId === 'github');
+  if (!github) return null;
+  const result = await auth.api.getAccessToken({ body: { accountId: github.id }, headers });
+  return result.accessToken;
 }
 
 export async function refreshConnection(connection: GitHubConnection): Promise<GitHubConnection> {
