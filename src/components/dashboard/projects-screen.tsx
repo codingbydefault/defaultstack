@@ -38,8 +38,7 @@ export function ProjectsScreen() {
         <div className="hero-grid" aria-hidden="true" />
         <div className="hero-beam" aria-hidden="true" />
         <div>
-          <p className="console-eyebrow"><span className="pulse-dot" /> DEFAULTSTACKR WORKSPACE</p>
-          <h1 id="console-title">Alles wat je bouwt.<br /><span>Op één plek.</span></h1>
+          <h1 id="console-title">Alles wat je bouwt.<br />Op één plek.</h1>
           <p>Beheer je projecten, uitrollen en databases vanuit je eigen cloud.</p>
           <Link href="/app/projects/new" className="primary hero-action">Nieuw project <span aria-hidden="true">↗</span></Link>
         </div>
@@ -52,7 +51,7 @@ export function ProjectsScreen() {
       </div>
       <GitHubPanel />
       <div className="projects-toolbar">
-        <div><p className="console-eyebrow">JE WERKRUIMTE</p><h2>Projecten <span>{projects.length}</span></h2></div>
+        <div><h2>Projecten <span>{projects.length}</span></h2></div>
         <div className="projects-controls">
           <label className="projects-search"><span aria-hidden="true">⌕</span><input type="search" aria-label="Zoek projecten" placeholder="Zoek op naam, repository of domein" value={search} onChange={event => setSearch(event.target.value)} /></label>
           <div className="projects-filters" role="group" aria-label="Filter projecten">
