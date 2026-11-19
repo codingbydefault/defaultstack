@@ -4,12 +4,16 @@ import { useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 const storageKey = 'defaultstackr-theme';
+const changeEvent = 'defaultstackr-theme-change';
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
-    setTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+    const syncTheme = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+    syncTheme();
+    window.addEventListener(changeEvent, syncTheme);
+    return () => window.removeEventListener(changeEvent, syncTheme);
   }, []);
 
   function toggle() {
@@ -17,6 +21,7 @@ export function ThemeToggle() {
     document.documentElement.dataset.theme = next;
     try { window.localStorage.setItem(storageKey, next); } catch { /* The switch still works when storage is unavailable. */ }
     setTheme(next);
+    window.dispatchEvent(new Event(changeEvent));
   }
 
   return <button type="button" className="theme-toggle" onClick={toggle} aria-label={theme === 'dark' ? 'Licht thema inschakelen' : 'Donker thema inschakelen'} aria-pressed={theme === 'dark'}>
