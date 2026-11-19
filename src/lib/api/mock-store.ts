@@ -480,6 +480,7 @@ function uniqueSlug(name: string): string {
 export async function mockHandle(request: Request, segments: string[]): Promise<Response> {
   const method = request.method.toUpperCase();
   try {
+    if (segments[0] === 'operations' && segments.length === 1 && method === 'GET') return ok({ checks: [], events: [], backups: [] });
     if (segments[0] === 'projects' && segments.length === 1 && method === 'GET') {
       return ok(store.projects);
     }
@@ -567,6 +568,11 @@ export async function mockHandle(request: Request, segments: string[]): Promise<
       // TODO(defaultstackr-api): honor ?cursor= and return nextCursor once logs are streamed.
       const chunk: LogChunk = { deploymentId: deployment.id, status: deployment.status, lines: logsFor(deployment), nextCursor: null };
       return ok(chunk);
+    }
+    if (segments[2] === 'deployments' && segments[4] === 'runtime-logs' && method === 'GET') {
+      const deployment = store.deployments.find(item => item.id === segments[3] && item.projectId === project.id);
+      if (!deployment) return jsonError('Uitrol niet gevonden.', 404);
+      return ok({ deploymentId: deployment.id, status: deployment.status, lines: [], nextCursor: null });
     }
     if (segments[2] === 'deployments' && segments[4] === 'rollback' && method === 'POST') {
       const deployment = store.deployments.find(item => item.id === segments[3] && item.projectId === project.id);

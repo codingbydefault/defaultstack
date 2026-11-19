@@ -171,6 +171,15 @@ export async function handleRealApi(request: Request, segments: string[], actorU
   const method = request.method.toUpperCase();
   const projectPath = slug ? `api/projects/${encodeURIComponent(slug)}` : 'api/projects';
   try {
+    if (resource === 'operations' && !slug && method === 'GET') {
+      if (actorUserId) return response({ error: 'Geen toegang.' }, 403);
+      const source = row(await call('api/operations'));
+      return response({
+        checks: list(source.checks).map(item => ({ code: string(item.code), status: string(item.status), message: string(item.message), checkedAt: date(item.checked_at) })),
+        events: list(source.events).map(item => ({ id: String(item.id), source: string(item.source), severity: string(item.severity), message: string(item.message), createdAt: date(item.created_at) })),
+        backups: list(source.backups).map(item => ({ id: String(item.id), filename: string(item.filename), sizeBytes: Number(item.size_bytes) || 0, createdAt: date(item.created_at) })),
+      });
+    }
     if (resource !== 'projects') return response({ error: 'Onbekende API-route.' }, 404);
     if (!slug && method === 'GET') {
       const projects = list(await call(projectPath));
@@ -240,7 +249,13 @@ export async function handleRealApi(request: Request, segments: string[], actorU
       if (item && action === 'logs' && method === 'GET') {
         const [deployment, logs] = await Promise.all([call(`${projectPath}/deployments/${item}`), call(`${projectPath}/deployments/${item}/logs`)]);
         const content = string(row(logs).logs);
-        return response({ deploymentId: item, status: row(deployment).status, lines: content.split('\n').filter(Boolean).map((message, index) => ({ id: String(index), timestamp: date(row(deployment).created_at), level: /error|failed/i.test(message) ? 'error' : 'info', message })), nextCursor: null });
+        return response({ deploymentId: item, status: row(deployment).status, lines: content.split('\n').filter(Boolean).map((message, index) => ({ id: String(index), timestamp: null, level: /error|failed/i.test(message) ? 'error' : /warn/i.test(message) ? 'warn' : 'info', message })), nextCursor: null });
+      }
+      if (item && action === 'runtime-logs' && method === 'GET') {
+        const [deployment, logs] = await Promise.all([call(`${projectPath}/deployments/${item}`), call(`${projectPath}/deployments/${item}/runtime-logs`)]);
+        const source = row(logs);
+        const toLines = (value: unknown, level: 'info' | 'error', prefix: string) => string(value).split('\n').filter(Boolean).map((message, index) => ({ id: `${prefix}-${index}`, timestamp: null, level, message: `[${prefix}] ${message}` }));
+        return response({ deploymentId: item, status: row(deployment).status, lines: [...toLines(source.stdout, 'info', 'out'), ...toLines(source.stderr, 'error', 'err')], nextCursor: null });
       }
       if (item && action === 'rollback' && method === 'POST') {
         const project = row(await call(projectPath));

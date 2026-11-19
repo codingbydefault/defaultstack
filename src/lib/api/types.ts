@@ -70,7 +70,7 @@ export type Deployment = {
 
 export type LogLine = {
   id: string;
-  timestamp: string;
+  timestamp: string | null;
   level: 'info' | 'warn' | 'error';
   message: string;
 };
@@ -149,4 +149,10 @@ export type Migration = {
   checksum: string;
   appliedAt: string;
   alreadyApplied?: boolean;
+};
+
+export type OperationsSnapshot = {
+  checks: { code: string; status: 'ok' | 'warning' | 'critical'; message: string; checkedAt: string }[];
+  events: { id: string; source: string; severity: 'info' | 'warning' | 'critical'; message: string; createdAt: string }[];
+  backups: { id: string; filename: string; sizeBytes: number; createdAt: string }[];
 };
