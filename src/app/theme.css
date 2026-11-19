@@ -1,0 +1,135 @@
+/* The light appearance is unchanged; these rules add a remembered dark option. */
+.theme-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: 42px;
+  padding: 8px 13px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-glass-card);
+  color: var(--color-ink);
+  box-shadow: inset 0 1px var(--color-glass-highlight);
+  font: 600 12px var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: border-color var(--duration-short) var(--ease-out), box-shadow var(--duration-short) var(--ease-out), transform var(--duration-short) var(--ease-out);
+}
+.theme-toggle:hover {
+  border-color: var(--color-violet-edge);
+  box-shadow: inset 0 1px var(--color-glass-highlight), 0 0 15px var(--color-violet-glow);
+  transform: translateY(-1px);
+}
+.theme-toggle-icon { display: block; flex: none; }
+.legal-header-actions { display: flex; align-items: center; gap: var(--space-lg); }
+.login-theme-control { position: absolute; top: 28px; right: 28px; z-index: 2; }
+
+/* A small reflected light follows the existing glass buttons in both themes. */
+:is(.primary, .outline, .auth-nav-login, .auth-nav-register, .auth-social, .responsive-nav summary, .pricing-page .pricing-card > a) {
+  background: radial-gradient(circle at 82% 0, var(--color-violet-flare), transparent 58%), linear-gradient(145deg, var(--color-glass-button-top), var(--color-glass-button-bottom));
+}
+:is(.primary, .outline, .auth-nav-login, .auth-nav-register, .auth-social, .responsive-nav summary, .pricing-page .pricing-card > a):hover:not(:disabled) {
+  background: radial-gradient(circle at 80% 0, var(--color-violet-flare), transparent 64%), linear-gradient(145deg, var(--color-glass-button-top), var(--color-glass-button-bottom));
+  box-shadow: inset 0 1px var(--color-glass-highlight), 0 0 18px var(--color-violet-glow);
+}
+.platform-console button:not(.primary):not(.deploy-select):not(.code-file-list button):not(.slug-reset):not(.theme-toggle) {
+  background: radial-gradient(circle at 85% 0, var(--color-violet-flare), transparent 64%), linear-gradient(145deg, var(--color-glass-button-top), var(--color-glass-button-bottom));
+}
+.platform-console .console-header-actions button.theme-toggle {
+  min-height: 38px;
+  color: var(--color-ink);
+  border-color: var(--color-rule);
+  background: var(--color-glass-card);
+  box-shadow: inset 0 1px var(--color-glass-highlight);
+}
+.platform-console .console-header-actions button.theme-toggle:hover {
+  border-color: var(--color-violet-edge);
+  box-shadow: inset 0 1px var(--color-glass-highlight), 0 0 15px var(--color-violet-glow);
+}
+
+html[data-theme='dark'] .landing,
+html[data-theme='dark'] .pricing-page,
+html[data-theme='dark'] .legal-page,
+html[data-theme='dark'] .login-shell {
+  background: radial-gradient(ellipse at 83% 8%, var(--color-violet-wash), transparent 42%), radial-gradient(ellipse at 12% 64%, var(--color-violet-wash), transparent 48%), var(--color-canvas);
+}
+html[data-theme='dark'] .platform-console {
+  background: radial-gradient(ellipse at 80% 5%, var(--color-violet-wash), transparent 40%), var(--color-canvas);
+}
+html[data-theme='dark'] .platform-console .console-sidebar,
+html[data-theme='dark'] .platform-console .console-header {
+  background: var(--color-paper-soft);
+}
+html[data-theme='dark'] .platform-console :is(.console-section, .github-panel, .profile-card, .profile-note, .database-workspace, .db-panel, .project-card, .preview-banner, .domain-card, .deploy-list li, .mail-plan, .mail-status, .domain-routing-options article, .admin-grid a, .project-overview-meta article, .project-overview-links a, .workspace-stats > div, .metric-grid article, .console-hero) {
+  background: var(--color-glass-card);
+}
+html[data-theme='dark'] .platform-console .console-hero {
+  background: radial-gradient(circle at 88% 22%, var(--color-violet-wash), transparent 42%), var(--color-glass-card);
+}
+html[data-theme='dark'] .platform-console :is(.analytics-summary, .project-overview-live) {
+  background: var(--color-paper-soft);
+}
+html[data-theme='dark'] .platform-console :is(.console-header-actions a, .sidebar-bottom a, .project-overview-live a, .project-overview-links a b) {
+  color: var(--color-accent);
+}
+html[data-theme='dark'] .platform-console :is(.project-overview-meta small, .mail-plan p, .mail-status p, .domain-routing-options p, .admin-grid p, .analytics-pages li, .review-moderation article p) {
+  color: var(--color-muted);
+}
+html[data-theme='dark'] .platform-console :is(.mail-plan strong, .admin-grid strong, .domain-routing-options strong, .mail-status h2) {
+  color: var(--color-ink);
+}
+html[data-theme='dark'] .platform-console .slug-reset {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  color: var(--color-accent);
+}
+html[data-theme='dark'] .platform-console .code-workspace,
+html[data-theme='dark'] .platform-console .code-editor textarea,
+html[data-theme='dark'] .platform-console .code-files input {
+  background: var(--color-dark);
+}
+html[data-theme='dark'] .platform-console .code-files,
+html[data-theme='dark'] .platform-console .code-editor-bar,
+html[data-theme='dark'] .platform-console .code-editor-actions {
+  border-color: var(--color-dark-rule);
+}
+html[data-theme='dark'] .pricing-page :is(.pricing-card, .business-calculator, .pricing-meter, .pricing-stripe),
+html[data-theme='dark'] .review-cards article,
+html[data-theme='dark'] .review-form-shell,
+html[data-theme='dark'] .login-card,
+html[data-theme='dark'] .auth-dialog {
+  background: var(--color-glass-card);
+}
+html[data-theme='dark'] .site-footer {
+  background: var(--color-paper-soft);
+}
+
+@media (max-width: 800px) {
+  .platform-console { grid-template-columns: minmax(0, 1fr); }
+  .platform-console .console-body, .platform-console .console-content { min-width: 0; }
+}
+@media (max-width: 760px) {
+  .theme-toggle { width: 44px; padding-inline: 0; }
+  .theme-toggle-label { display: none; }
+  .legal-header-actions { gap: var(--space-sm); }
+  .login-theme-control { top: 24px; right: 16px; }
+}
+@media (max-width: 380px) {
+  .public-auth-actions { gap: 6px; }
+  .public-auth-actions .language-control select { width: 52px; padding-inline: 5px; }
+  .public-auth-actions .auth-nav-login,
+  .public-auth-actions .auth-nav-register { padding-inline: 8px; font-size: 10px; }
+  .platform-console .console-breadcrumb span, .platform-console .console-breadcrumb b { display: none; }
+  .platform-console .console-header { padding-inline: var(--space-md); }
+}
+@media (max-width: 520px) {
+  .login-theme-control { position: relative; top: auto; right: auto; align-self: flex-end; margin-bottom: var(--space-sm); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle { transition: none; }
+}

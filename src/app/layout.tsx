@@ -7,6 +7,7 @@ import "./globals.css";
 import "./brand.css";
 import "./tokens.css";
 import "./light-ui.css";
+import "./theme.css";
 import type { Metadata } from "next";
 import { PUBLIC_SITE_URL } from "@/lib/site";
 
@@ -27,7 +28,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl">
+    <html lang="nl" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: "try{if(localStorage.getItem('defaultstackr-theme')==='dark')document.documentElement.dataset.theme='dark'}catch{}" }} /></head>
       <body>{children}</body>
     </html>
   );

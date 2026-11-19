@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { CustomerAuthForm } from '@/components/customer-auth-form';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function PublicAuthActions() {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -11,6 +12,7 @@ export function PublicAuthActions() {
     dialog.current?.showModal();
   }
   return <div className="public-auth-actions">
+    <ThemeToggle />
     <label className="language-control"><span className="sr-only">Taal</span><select aria-label="Taal" defaultValue="nl"><option value="nl">NL</option><option value="en" disabled>EN · binnenkort</option></select></label>
     <button type="button" className="auth-nav-login" onClick={() => open('login')}>Aanmelden</button>
     <button type="button" className="primary auth-nav-register" aria-label="Account aanmaken" onClick={() => open('register')}><span className="auth-register-full">Account aanmaken</span><span className="auth-register-short">Aanmaken</span> ↗</button>

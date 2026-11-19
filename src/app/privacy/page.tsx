@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { SiteFooter } from '@/components/site-footer';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export const metadata = { title: 'Privacyverklaring | DefaultStackr', description: 'Lees hoe DefaultStackr persoonsgegevens verwerkt en welke rechten je hebt.' };
 
 export default function PrivacyPage() {
   return <main className="legal-page" lang="nl">
-    <header className="legal-header wrap"><Link className="brand" href="/"><span className="brand-icon"><i /><i /><i /></span><span>Default<span className="accent">Stackr</span><small>by CodedByDefault</small></span></Link><Link href="/voorwaarden">Voorwaarden ↗</Link></header>
+    <header className="legal-header wrap"><Link className="brand" href="/"><span className="brand-icon"><i /><i /><i /></span><span>Default<span className="accent">Stackr</span><small>by CodedByDefault</small></span></Link><div className="legal-header-actions"><ThemeToggle /><Link href="/voorwaarden">Voorwaarden ↗</Link></div></header>
     <article className="legal-content wrap">
       <p className="console-eyebrow">JURIDISCH / PERSOONSGEGEVENS</p><h1>Privacyverklaring</h1><p className="legal-date">Versie 18 november 2026</p>
       <p>CodedByDefault, Poorterslaan 157, 4561 ZM Hulst, Nederland, KvK 42171617, btw-id NL005557496B77, is verantwoordelijk voor de persoonsgegevens die wij zelf gebruiken voor de werking en administratie van DefaultStackr. Neem contact op via <a href="mailto:codedbydefault@gmail.com">codedbydefault@gmail.com</a>. Voor persoonsgegevens die een klant in een eigen project opslaat, kan die klant verwerkingsverantwoordelijke zijn en handelen wij als verwerker volgens afzonderlijke afspraken.</p>

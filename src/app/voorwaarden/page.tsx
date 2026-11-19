@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { SiteFooter } from '@/components/site-footer';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export const metadata = { title: 'Algemene voorwaarden | DefaultStackr', description: 'Algemene voorwaarden van DefaultStackr, een product van CodedByDefault.' };
 
 export default function TermsPage() {
   return <main className="legal-page" lang="nl">
-    <header className="legal-header wrap"><Link className="brand" href="/"><span className="brand-icon"><i /><i /><i /></span><span>Default<span className="accent">Stackr</span><small>by CodedByDefault</small></span></Link><Link href="/prijzen">Pakketten ↗</Link></header>
+    <header className="legal-header wrap"><Link className="brand" href="/"><span className="brand-icon"><i /><i /><i /></span><span>Default<span className="accent">Stackr</span><small>by CodedByDefault</small></span></Link><div className="legal-header-actions"><ThemeToggle /><Link href="/prijzen">Pakketten ↗</Link></div></header>
     <article className="legal-content wrap">
       <p className="console-eyebrow">JURIDISCH / PLATFORM</p><h1>Algemene voorwaarden</h1><p className="legal-date">Versie 18 november 2026</p>
       <p>Deze voorwaarden gelden voor het gebruik van DefaultStackr. DefaultStackr is een product van CodedByDefault, Poorterslaan 157, 4561 ZM Hulst, Nederland, KvK 42171617, btw-id NL005557496B77. Je bereikt ons via <a href="mailto:codedbydefault@gmail.com">codedbydefault@gmail.com</a>.</p>
