@@ -26,6 +26,7 @@
 }
 .theme-toggle-icon { display: block; flex: none; }
 .legal-header-actions { display: flex; align-items: center; gap: var(--space-lg); }
+.legal-header-actions > a { color: var(--color-accent); text-underline-offset: 4px; }
 .login-theme-control { position: absolute; top: 28px; right: 28px; z-index: 2; }
 
 /* A small reflected light follows the existing glass buttons in both themes. */
