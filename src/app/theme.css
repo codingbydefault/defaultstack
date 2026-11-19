@@ -121,10 +121,6 @@ html[data-theme='dark'] .site-footer {
   .login-theme-control { top: 24px; right: 16px; }
 }
 @media (max-width: 380px) {
-  .public-auth-actions { gap: 6px; }
-  .public-auth-actions .language-control select { width: 52px; padding-inline: 5px; }
-  .public-auth-actions .auth-nav-login,
-  .public-auth-actions .auth-nav-register { padding-inline: 8px; font-size: 10px; }
   .platform-console .console-breadcrumb span, .platform-console .console-breadcrumb b { display: none; }
   .platform-console .console-header { padding-inline: var(--space-md); }
 }

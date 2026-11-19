@@ -1,11 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { CustomerAuthForm } from '@/components/customer-auth-form';
 import { ThemeToggle } from '@/components/theme-toggle';
 
-export function PublicAuthActions() {
+export function PublicAuthActions({ onDialogClose }: { onDialogClose?: () => void } = {}) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const dialogTitle = useId();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   function open(next: 'login' | 'register') {
     setMode(next);
@@ -16,11 +17,11 @@ export function PublicAuthActions() {
     <label className="language-control"><span className="sr-only">Taal</span><select aria-label="Taal" defaultValue="nl"><option value="nl">NL</option><option value="en" disabled>EN · binnenkort</option></select></label>
     <button type="button" className="auth-nav-login" onClick={() => open('login')}>Aanmelden</button>
     <button type="button" className="primary auth-nav-register" aria-label="Account aanmaken" onClick={() => open('register')}><span className="auth-register-full">Account aanmaken</span><span className="auth-register-short">Aanmaken</span> ↗</button>
-    <dialog ref={dialog} className="auth-dialog" aria-labelledby="auth-dialog-title" onClick={event => { if (event.target === dialog.current) dialog.current.close(); }}>
+    <dialog ref={dialog} className="auth-dialog" aria-labelledby={dialogTitle} onClose={onDialogClose} onClick={event => { if (event.target === dialog.current) dialog.current.close(); }}>
       <div className="auth-dialog-inner">
         <button type="button" className="auth-dialog-close" aria-label="Sluiten" onClick={() => dialog.current?.close()}>×</button>
         <span className="section-label">/ WELKOM BIJ DEFAULTSTACKR</span>
-        <h2 id="auth-dialog-title">{mode === 'register' ? 'Maak je account aan.' : 'Welkom terug.'}</h2>
+        <h2 id={dialogTitle}>{mode === 'register' ? 'Maak je account aan.' : 'Welkom terug.'}</h2>
         <p>Je projecten en data op één plek, onder jouw eigen profiel.</p>
         <CustomerAuthForm key={mode} initialMode={mode} />
       </div>
