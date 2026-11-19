@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import type { PortalIdentity } from '@/lib/auth/portal';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function Shell({ mock, identity, children }: { mock: boolean; identity: PortalIdentity; children: React.ReactNode }) {
   const pathname = usePathname();
@@ -57,6 +58,7 @@ export function Shell({ mock, identity, children }: { mock: boolean; identity: P
         <header className="console-header">
           <div className="console-breadcrumb"><span>Werkruimte</span><b>/</b><strong>{pageLabel}</strong></div>
           <div className="console-header-actions">
+            <ThemeToggle />
             {mock && <span className="mock-pill">Voorbeelddata</span>}
             <span className="header-live"><span className="pulse-dot" /> PORTAAL ACTIEF</span>
             <Link href="/">Site</Link>

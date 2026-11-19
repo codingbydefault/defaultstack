@@ -1,5 +1,6 @@
 /* Hallmark · DefaultStackr · neutral glass system · v2.0.0 */
 :root {
+  color-scheme: light;
   --color-canvas: #f6f7f9;
   --color-paper: #ffffff;
   --color-paper-soft: #eef0f4;
@@ -16,6 +17,7 @@
   --color-violet-edge: #9b76db;
   --color-violet-glow: #8c5ae25e;
   --color-violet-wash: #9b6be312;
+  --color-violet-flare: #b89cff30;
   --color-focus: #7c4ed2;
   --color-dark: #1a1d25;
   --color-dark-raised: #292d37;
@@ -55,4 +57,42 @@
   --ds-purple-soft: var(--color-accent-deep);
   --ds-text: var(--color-ink);
   --ds-muted: var(--color-muted);
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --color-canvas: #08090e;
+  --color-paper: #151720;
+  --color-paper-soft: #101117;
+  --color-paper-hover: #20222d;
+  --color-ink: #f5f4f8;
+  --color-ink-soft: #dedbe7;
+  --color-muted: #a6a3b2;
+  --color-rule: #343641;
+  --color-accent: #c3a8f2;
+  --color-accent-deep: #eadbff;
+  --color-accent-soft: #30283f;
+  --color-accent-ink: #f5f4f8;
+  --color-brand-violet: #ae8fe9;
+  --color-violet-edge: #8a70ad;
+  --color-violet-glow: #9d73dd38;
+  --color-violet-wash: #a67ee11a;
+  --color-violet-flare: #a67ee133;
+  --color-focus: #d0aeff;
+  --color-dark: #0d0e15;
+  --color-dark-raised: #1b1d27;
+  --color-dark-rule: #3a3c48;
+  --color-dark-ink: #f5f4f8;
+  --color-dark-muted: #b4b1c1;
+  --color-glass-card: #1d1f2ac9;
+  --color-glass-highlight: #ffffff1c;
+  --color-glass-button-top: #30313ee8;
+  --color-glass-button-bottom: #1a1b25ec;
+  --color-glass-button-border: #777184;
+  --color-glass-button-ink: #f9f8fc;
+  --color-good: #8bdbba;
+  --color-warn: #e4c47e;
+  --color-bad: #ef9eaf;
+  --color-shadow: #00000066;
+  --color-backdrop: #030409c9;
 }
