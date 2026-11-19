@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ApiError, dashboardApi } from '@/lib/api/client';
 import type { Project } from '@/lib/api/types';
 import { DeploymentsPanel } from '@/components/dashboard/deployments-panel';
+import { ProjectLogsPanel } from '@/components/dashboard/project-logs-panel';
 import { DomainsPanel } from '@/components/dashboard/domains-panel';
 import { EnvPanel } from '@/components/dashboard/env-panel';
 import { chipClass, projectStatusLabel } from '@/components/dashboard/format';
@@ -63,7 +64,7 @@ export function ProjectScreen({ projectId, tab }: { projectId: string; tab: Proj
       {tab === 'overview' && <OverviewPanel project={project} />}
       {tab === 'deployments' && <DeploymentsPanel projectId={project.id} canDeploy={project.owner.kind === 'team'} />}
       {tab === 'code' && <CodePanel projectId={project.id} repoUrl={project.repoUrl} />}
-      {tab === 'logs' && <DeploymentsPanel projectId={project.id} logsOnly canDeploy={project.owner.kind === 'team'} />}
+      {tab === 'logs' && <ProjectLogsPanel projectId={project.id} />}
       {tab === 'analytics' && <AnalyticsPanel projectId={project.id} />}
       {tab === 'domains' && <DomainsPanel projectId={project.id} previewHost={project.previewHostname} />}
       {tab === 'env' && <EnvPanel projectId={project.id} />}

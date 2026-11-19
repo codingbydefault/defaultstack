@@ -10,6 +10,7 @@ import type {
   Project,
   ProjectInput,
   Migration,
+  OperationsSnapshot,
 } from '@/lib/api/types';
 
 export class ApiError extends Error {
@@ -50,6 +51,7 @@ function list<T>(data: T[] | { items: T[] }): T[] {
 }
 
 export const dashboardApi = {
+  operations: () => request<OperationsSnapshot>(apiPaths.operations()),
   projects: async () => list(await request<Project[] | { items: Project[] }>(apiPaths.projects())),
   project: (id: string) => request<Project>(apiPaths.project(id)),
   createProject: (input: ProjectInput) =>
@@ -61,6 +63,8 @@ export const dashboardApi = {
   deploy: (id: string) => request<Deployment>(apiPaths.deployments(id), { method: 'POST', body: '{}' }),
   logs: (id: string, deploymentId: string, cursor?: string | null) =>
     request<LogChunk>(apiPaths.logs(id, deploymentId, cursor)),
+  runtimeLogs: (id: string, deploymentId: string) =>
+    request<LogChunk>(apiPaths.runtimeLogs(id, deploymentId)),
   rollback: (id: string, deploymentId: string) =>
     request<Deployment>(apiPaths.rollback(id, deploymentId), { method: 'POST', body: '{}' }),
   domains: async (id: string) => list(await request<Domain[] | { items: Domain[] }>(apiPaths.domains(id))),

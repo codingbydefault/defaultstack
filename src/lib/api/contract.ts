@@ -43,6 +43,7 @@
 export const API_PREFIX = '/v1';
 
 export const apiPaths = {
+  operations: () => `${API_PREFIX}/operations`,
   projects: () => `${API_PREFIX}/projects`,
   project: (id: string) => `${API_PREFIX}/projects/${encodeURIComponent(id)}`,
   deployments: (id: string) => `${API_PREFIX}/projects/${encodeURIComponent(id)}/deployments`,
@@ -50,6 +51,8 @@ export const apiPaths = {
     const path = `${API_PREFIX}/projects/${encodeURIComponent(id)}/deployments/${encodeURIComponent(deploymentId)}/logs`;
     return cursor ? `${path}?cursor=${encodeURIComponent(cursor)}` : path;
   },
+  runtimeLogs: (id: string, deploymentId: string) =>
+    `${API_PREFIX}/projects/${encodeURIComponent(id)}/deployments/${encodeURIComponent(deploymentId)}/runtime-logs`,
   rollback: (id: string, deploymentId: string) =>
     `${API_PREFIX}/projects/${encodeURIComponent(id)}/deployments/${encodeURIComponent(deploymentId)}/rollback`,
   domains: (id: string) => `${API_PREFIX}/projects/${encodeURIComponent(id)}/domains`,
