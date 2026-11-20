@@ -20,7 +20,7 @@ if check curl --fail --max-time 5 http://127.0.0.1:3200/healthz; then echo 'OK: 
 state_dir="${DEFAULTSTACK_STATE_DIR:-$HOME/.local/state/defaultstack}"
 if [[ -r "$state_dir/status.json" ]]; then echo 'OK: deployment snapshot exists'; else echo 'NOTICE: export snapshot with node deploy/apps/export-status.mjs'; fi
 if [[ -f .env.local ]] && grep -q '^ENABLE_LOCAL_DATABASE_EDITOR=true' .env.local; then
-  echo 'NOTICE: database editor enabled. Keep this workspace private until authentication is implemented.'
+  echo 'NOTICE: database editor enabled. An admin session is required, but keep this workspace private; it is not a customer permission system.'
 fi
 if [[ "$issues" -gt 0 ]]; then echo "Found $issues required setup issue(s)."; exit 1; fi
 echo 'Required tools available. Health notices above may still require action.'

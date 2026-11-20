@@ -83,8 +83,9 @@ On the home Ubuntu machine, copy `.env.example` to `.env.local`, set
 `DATABASE_API_URL=http://127.0.0.1:3000` and set
 `ENABLE_LOCAL_DATABASE_EDITOR=true` **only for private network use**. Restart
 Next.js after changing environment variables. Keep this option false on public
-hosting: the editor is disabled by default because account authentication and
-project permissions have not been implemented. CORS is not authentication.
+hosting. When it is enabled, the route still requires the admin session cookie
+and rejects cross-site mutations. A customer session is not enough, and this
+route is not a per-project permission system. CORS is not authentication.
 
 Start Express separately, then run this frontend on port 3100. The API must
 implement GET/POST `/api/users` and `/api/products`, and PATCH/DELETE
