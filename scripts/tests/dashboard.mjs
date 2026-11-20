@@ -72,6 +72,11 @@ try {
   const customerLogin = await fetch(`${base}/app/login?provider=github`, { headers: { cookie }, redirect: 'manual' });
   assert.equal(customerLogin.status, 200, 'an admin session must not intercept customer login');
   assert.match(await customerLogin.text(), /Verder met GitHub/);
+  assert.doesNotMatch(await (await fetch(`${base}/app/login`)).text(), /Inloggen met GitHub/);
+  const githubStart = await fetch(`${base}/api/auth/github`, { headers: { Accept: 'application/json' }, redirect: 'manual' });
+  assert.equal(githubStart.status, 503);
+  const githubStartBody = await githubStart.json();
+  assert.equal(githubStartBody.error, 'GitHub-aanmelding is nog niet ingesteld.');
   const switchToCustomer = await fetch(`${base}/api/customer-entry/social`, {
     method: 'POST',
     headers: { cookie, Origin: base, 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -84,7 +89,9 @@ try {
   const customerStatus = await fetch(`${base}/api/customer-entry/status`, { headers: { Origin: 'https://defaultstackr.nl' } });
   assert.equal(customerStatus.status, 200);
   assert.equal(customerStatus.headers.get('access-control-allow-origin'), 'https://defaultstackr.nl');
-  assert.equal((await customerStatus.json()).available, false);
+  const customerStatusBody = await customerStatus.json();
+  assert.equal(customerStatusBody.available, false);
+  assert.equal(customerStatusBody.githubSignIn, false);
   const publicSocial = await fetch(`${base}/api/customer-entry/social`, {
     method: 'POST', headers: { Origin: 'https://defaultstackr.nl', 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'provider=github', redirect: 'manual',

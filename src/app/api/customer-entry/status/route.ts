@@ -1,4 +1,5 @@
 import { customerAuthConfigured } from '@/lib/auth/customer';
+import { githubSignInConfigured, githubSignInHref } from '@/lib/auth/github-signin.mjs';
 import { siteDb } from '@/lib/site-db';
 
 export const dynamic = 'force-dynamic';
@@ -18,9 +19,12 @@ export async function GET(request: Request) {
     try { await siteDb()?.query('SELECT 1 FROM "user" LIMIT 0'); }
     catch { available = false; }
   }
+  const githubSignIn = githubSignInConfigured();
   return Response.json({
     available,
     github: available && Boolean(process.env.DEFAULTSTACKR_GITHUB_CLIENT_ID && process.env.DEFAULTSTACKR_GITHUB_CLIENT_SECRET),
     google: available && Boolean(process.env.DEFAULTSTACKR_GOOGLE_CLIENT_ID && process.env.DEFAULTSTACKR_GOOGLE_CLIENT_SECRET),
+    githubSignIn,
+    githubSignInHref: githubSignIn ? githubSignInHref() : null,
   }, { headers });
 }

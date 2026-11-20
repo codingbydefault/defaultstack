@@ -6,12 +6,14 @@ import { createAuthClient } from 'better-auth/react';
 
 const cloud = 'https://www.defaultstackr.cloud';
 const authClient = createAuthClient();
-type Availability = { available: boolean; github: boolean; google: boolean };
+type Availability = { available: boolean; github: boolean; google: boolean; githubSignIn?: boolean; githubSignInHref?: string | null };
 
-export function CustomerAuthForm({ initialMode = 'login', provider }: { initialMode?: 'login' | 'register'; provider?: string }) {
+export function CustomerAuthForm({ initialMode = 'login', provider, githubSignIn = false, githubSignInHref = '/api/auth/github' }: { initialMode?: 'login' | 'register'; provider?: string; githubSignIn?: boolean; githubSignInHref?: string }) {
   const [mode, setMode] = useState(initialMode);
   const [error, setError] = useState('');
   const [availability, setAvailability] = useState<Availability | null>(null);
+  const [showGithub, setShowGithub] = useState(githubSignIn);
+  const [githubHref, setGithubHref] = useState(githubSignInHref);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -20,10 +22,31 @@ export function CustomerAuthForm({ initialMode = 'login', provider }: { initialM
         if (!response.ok) throw new Error('unavailable');
         return response.json() as Promise<Availability>;
       })
-      .then(setAvailability)
+      .then(body => {
+        setAvailability(body);
+        if (!githubSignIn && body.githubSignIn && body.githubSignInHref) {
+          setShowGithub(true);
+          setGithubHref(body.githubSignInHref);
+        }
+      })
       .catch(() => { if (!controller.signal.aborted) setAvailability({ available: false, github: false, google: false }); });
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (githubSignIn) return undefined;
+    const controller = new AbortController();
+    fetch('/api/customer-entry/status', { cache: 'no-store', signal: controller.signal })
+      .then(async response => response.ok ? response.json() as Promise<Availability> : null)
+      .then(body => {
+        if (body?.githubSignIn && body.githubSignInHref) {
+          setShowGithub(true);
+          setGithubHref(body.githubSignInHref);
+        }
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [githubSignIn]);
 
   useEffect(() => {
     if (provider !== 'github' && provider !== 'google') return;
@@ -36,6 +59,8 @@ export function CustomerAuthForm({ initialMode = 'login', provider }: { initialM
   return <div className="customer-auth-form">
     {availability && !availability.available && <p role="status" className="auth-availability">Klantaanmelding wordt nog ingesteld op de server. Probeer het later opnieuw.</p>}
     <div className="auth-social-list">
+      {/* Anchor, not a form. A form whose response redirects to GitHub is blocked when form-action is 'self'. */}
+      {showGithub && <a className="auth-social auth-social-github" href={githubHref}><span aria-hidden="true">⌘</span>Inloggen met GitHub <b aria-hidden="true">↗</b></a>}
       <form action={`${cloud}/api/customer-entry/social`} method="post"><input type="hidden" name="provider" value="github" /><button type="submit" disabled={!availability?.github} className="auth-social auth-social-github"><span aria-hidden="true">⌘</span>Verder met GitHub <b aria-hidden="true">↗</b></button></form>
       <form action={`${cloud}/api/customer-entry/social`} method="post"><input type="hidden" name="provider" value="google" /><button type="submit" disabled={!availability?.google} className="auth-social auth-social-google"><span aria-hidden="true">G</span>Verder met Google <b aria-hidden="true">↗</b></button></form>
     </div>

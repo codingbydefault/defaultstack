@@ -1,6 +1,6 @@
-import { betterAuth } from 'better-auth';
+import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { Pool } from 'pg';
-import { SITE_URL } from '@/lib/site';
+import { accountOptions, authBaseURL, githubAccountHooks, githubProviderConfig } from '@/lib/auth/github-signin.mjs';
 
 export function customerAuthConfigured(): boolean {
   return Boolean(process.env.DEFAULTSTACKR_AUTH_DATABASE_URL
@@ -8,29 +8,36 @@ export function customerAuthConfigured(): boolean {
     && process.env.DEFAULTSTACKR_AUTH_SECRET.length >= 32);
 }
 
+function trustedOrigins(): string[] {
+  const origin = authBaseURL();
+  return [...new Set([
+    origin,
+    'https://defaultstack.vercel.app',
+    'https://www.defaultstackr.cloud',
+    'https://defaultstackr.nl', 'https://www.defaultstackr.nl',
+    'https://defaultstackr.online', 'https://www.defaultstackr.online',
+  ])];
+}
+
 function createCustomerAuth() {
-  const githubId = process.env.DEFAULTSTACKR_GITHUB_CLIENT_ID;
-  const githubSecret = process.env.DEFAULTSTACKR_GITHUB_CLIENT_SECRET;
+  const github = githubProviderConfig() as NonNullable<BetterAuthOptions['socialProviders']>['github'];
   const googleId = process.env.DEFAULTSTACKR_GOOGLE_CLIENT_ID;
   const googleSecret = process.env.DEFAULTSTACKR_GOOGLE_CLIENT_SECRET;
+  const hooks = githubAccountHooks();
   return betterAuth({
     appName: 'DefaultStackr',
-    baseURL: process.env.DEFAULTSTACKR_PUBLIC_URL || SITE_URL,
+    baseURL: authBaseURL(),
     secret: process.env.DEFAULTSTACKR_AUTH_SECRET,
     database: new Pool({ connectionString: process.env.DEFAULTSTACKR_AUTH_DATABASE_URL, max: 5, connectionTimeoutMillis: 3000 }),
     emailAndPassword: { enabled: true, minPasswordLength: 10, maxPasswordLength: 200 },
     socialProviders: {
-      ...(githubId && githubSecret ? { github: { clientId: githubId, clientSecret: githubSecret } } : {}),
+      ...(github ? { github } : {}),
       ...(googleId && googleSecret ? { google: { clientId: googleId, clientSecret: googleSecret } } : {}),
     },
-    account: { accountLinking: { enabled: true, disableImplicitLinking: true } },
+    account: accountOptions() as BetterAuthOptions['account'],
+    ...(hooks ? { databaseHooks: hooks } : {}),
     rateLimit: { enabled: true, window: 60, max: 40, storage: 'database' },
-    trustedOrigins: [
-      ...(process.env.DEFAULTSTACKR_PUBLIC_URL?.startsWith('http://localhost:') ? [process.env.DEFAULTSTACKR_PUBLIC_URL] : []),
-      'https://www.defaultstackr.cloud',
-      'https://defaultstackr.nl', 'https://www.defaultstackr.nl',
-      'https://defaultstackr.online', 'https://www.defaultstackr.online',
-    ],
+    trustedOrigins: trustedOrigins(),
   });
 }
 

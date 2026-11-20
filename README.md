@@ -115,4 +115,4 @@ environment variables and project settings. The older snapshot view is no longer
 mounted there. `/api/platform` still reads a read-only status file when
 `DEFAULTSTACK_STATE_DIR` is set. The Docker deploy script and
 `node deploy/apps/export-status.mjs` are unchanged and still do not run from
-the browser. GitHub login for end users is not part of this admin session.
+the browser. GitHub sign-in for customers uses the better-auth session, not the admin `ds_session` cookie.
