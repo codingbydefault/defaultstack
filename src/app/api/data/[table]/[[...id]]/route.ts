@@ -1,9 +1,19 @@
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectsCrossSite } from '@/lib/auth/guard';
+import { SESSION_COOKIE, readSession } from '@/lib/auth/session';
 
 async function forward(request: NextRequest, context: { params: Promise<{ table: string; id?: string[] }> }) {
-  // This management interface is explicitly opt-in until platform authentication exists.
+  // Opt-in operator tool. Disabled unless explicitly enabled, and then only for a valid admin session.
   if (process.env.ENABLE_LOCAL_DATABASE_EDITOR !== 'true') {
     return NextResponse.json({ error: 'Database editor disabled. Enable it only on your private home network.' }, { status: 503 });
+  }
+  const jar = await cookies();
+  if (!(await readSession(jar.get(SESSION_COOKIE)?.value))) {
+    return NextResponse.json({ error: 'Niet ingelogd.' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+  }
+  if (request.method !== 'GET' && request.method !== 'HEAD' && rejectsCrossSite(request)) {
+    return NextResponse.json({ error: 'Ongeldige herkomst.' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
   }
   const { table, id = [] } = await context.params;
   if (!['users', 'products'].includes(table) || id.length > 1 || (id[0] && !/^\d+$/.test(id[0]))) {
