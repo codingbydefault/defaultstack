@@ -116,3 +116,20 @@ Acceptance for taking money:
 - A Pro subscription, once enabled, maps to the catalog’s 10 projects and 5 GB, not to a second hardcoded number.
 - Failed payment does not delete data. It stops new deploys. The billing doc already says existing apps stay up when a spending limit is hit; follow that.
 - Browser redirects never grant a plan. Only a verified Stripe webhook does.
+
+## Update CBD-20261120-004
+
+Source: the [update section](./AUDIT.md#update-cbd-20261120-004) in `AUDIT.md`, same day, base `b5107ab`. This does not change the scores above. The database-editor gate those scores already mark as done is on `main`.
+
+Shipped as pull requests, not merged and not deployed:
+
+1. [PR #13](https://github.com/codingbydefault/defaultstack/pull/13) — response headers. Closes the live gap recorded in the update (no CSP, no framing header, no nosniff, no referrer policy, no permissions policy on the four public URLs; no HSTS on `www.defaultstackr.cloud`). HSTS is limited to the `.cloud` hosts so Vercel’s existing header, including `includeSubDomains; preload` on `defaultstack.vercel.app`, stays the one browsers keep.
+2. [PR #14](https://github.com/codingbydefault/defaultstack/pull/14) — `better-auth` 1.7.25 to 1.7.27. The only in-range outdated package. `npm audit` was already clean.
+
+Held back, with the reason in the audit update:
+
+- Next.js 16.4.6 (`middleware` to `proxy`, plus the other breaks in the v16 upgrade guide).
+- TypeScript 6.0.3 and 7.0.2.
+- `@types/node` 24.19.2, 25.9.9, and 26.6.6 while the runtime used here is Node 22.
+
+Left as findings, not patches: the privacy-link contrast and the home brand link’s accessible name (Lighthouse accessibility 97), and `Access-Control-Allow-Origin: *` on the reviews JSON. Tightening that CORS header can wait until someone checks every page that fetches `/api/reviews` from another host. The canonical-host matcher note in the earlier roadmap is unchanged: `/` on `.nl` and `.online` still returned 200 from Vercel in this pass.

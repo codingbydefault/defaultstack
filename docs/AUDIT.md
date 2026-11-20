@@ -4,6 +4,8 @@ Audit date: 20 November 2026.
 Workspace: `codingbydefault/defaultstack` at `5191ae7` (main, “Merge pull request #11 from codingbydefault/codex/project-logs”).  
 This branch adds the database-editor session gate described in [Remediation in this branch](#remediation-in-this-branch). It does not deploy, migrate, or change billing.
 
+A same-day follow-up, [Update CBD-20261120-004](#update-cbd-20261120-004), rechecked `b5107ab` after that gate landed. It adds dependency, header, Lighthouse, and smoke-test results. The sections below are the earlier pass and stay as written.
+
 Labels: **VERIFIED** means observed in source, command output, or a live HTTP response during this audit. **INFERRED** means a conclusion from that evidence, not a direct observation. Prices below are copied from `src/lib/billing/catalog.json`. None were invented, and none are charged today.
 
 ## Repositories
@@ -187,3 +189,107 @@ No container cluster, no per-tenant VM, no usage meter that could produce a vari
 `/api/data/[table]/[[...id]]` now returns 401 unless `ds_session` verifies as the admin, and 403 when a mutation’s `Origin` does not match the host. Anonymous requests are rejected before `DATABASE_API_URL` is called. A customer cookie is not accepted. The feature flag still defaults off. The route still does not attach `DEFAULTSTACKR_API_KEY`, so it does not gain new access to the live API.
 
 `scripts/tests/database-editor.mjs` starts a local upstream and the standalone server with the flag on. It checks anonymous and forged cookies, a fake Better Auth cookie, cross-site POST, an invalid table, and an authenticated POST. `npm test` passed, including the two existing suites.
+
+## Update CBD-20261120-004
+
+Date: 20 November 2026. Base: `b5107ab` (“Require an admin session for the database editor. (#12)”).  
+Task: recheck outdated and vulnerable dependencies, framework versions, build health, live security headers, bundle size, Lighthouse, accessibility, and `codingbydefault/defaultstackr-smoke-test`. No production deploy, DNS change, secret change, or merge to `main`.
+
+Environment: Node `v22.23.4`, npm `10.9.9`. `npm ci` added 70 packages and audited 71, `found 0 vulnerabilities`.
+
+### Dependencies
+
+`npm audit` and `npm audit --omit=dev` both reported `found 0 vulnerabilities`.
+
+`npm outdated` on `b5107ab`:
+
+| Package | Current | Wanted (in range) | Latest |
+| --- | --- | --- | --- |
+| `better-auth` | 1.7.25 | 1.7.27 | 1.7.27 |
+| `next` | 15.5.29 | 15.5.29 | 16.4.6 |
+| `typescript` | 5.9.3 | 5.9.3 | 7.0.2 |
+| `@types/node` | 22.20.5 | 22.20.5 | 26.6.6 |
+
+`npm ls --depth=0` also showed React and React DOM `19.3.1`, `pg` `8.23.1`, `@types/react` and `@types/react-dom` `19.3.0`, `@types/pg` `8.23.1`, `@fontsource/onest` `5.3.1`, `@fontsource/outfit` `5.3.0`. `npm view` `dist-tags.latest` matched those except where a newer major exists (table above). `npm ls postcss` showed `postcss@8.5.33 overridden`, and `npm view postcss version` was `8.5.33`.
+
+Registry lines, from `npm view`:
+
+- `next` dist-tag `backport` is `15.5.29` (installed). dist-tag `latest` is `16.4.6`.
+- `typescript` `5.9.3` is the newest 5.x. `6.0.3` and `7.0.2` also exist. dist-tag `latest` is `7.0.2`.
+- `@types/node` newest per major: 22.20.5 (installed), 24.19.2, 25.9.9, 26.6.6.
+- `better-auth` `1.7.27` was published `2026-11-20T10:53:10.415Z`. `1.8.0` is still a beta tag in the time metadata, not `dist-tags.latest`.
+
+Safe update opened: [PR #14](https://github.com/codingbydefault/defaultstack/pull/14) (`better-auth` `^1.7.25` to `^1.7.27`). `src/lib/auth/customer.ts` uses email/password plus optional GitHub and Google. It does not set a custom JWT `getJwks` adapter or OAuth-provider `originBoundFields`, which are the action-required notes on the 1.7.26 and 1.7.27 GitHub releases. After install: `npm audit` still 0 vulnerabilities. `npm run lint`, `npm run build`, and `npm test` exited 0 on that branch.
+
+Majors not installed:
+
+- **Next.js 16.4.6.** The [upgrade guide](https://nextjs.org/docs/app/guides/upgrading/version-16) removes synchronous `cookies` / `headers` / `params` / `searchParams`, renames `middleware` to `proxy`, and makes Turbopack the default. This repo has `src/middleware.ts`. Route handlers checked in this pass already `await` those APIs. A codemod was not run.
+- **TypeScript 6.0.3 and 7.0.2.** Next.js documents that TypeScript 7 does not provide the JavaScript compiler API. This repo’s lint script is `tsc --noEmit`. Not installed on Next 15.5.29.
+- **`@types/node` 24, 25, and 26.** This audit ran on Node `v22.23.4`. `engines` is `>=20`. Newer type majors were not installed.
+
+npm printed that CLI `12.2.3` exists. That is the machine’s npm, not a dependency in `package.json`. It was not changed.
+
+### Build health on `b5107ab`
+
+| Command | Result |
+| --- | --- |
+| `npm ci` | Exit 0. 0 vulnerabilities. |
+| `npm run lint` | Exit 0. |
+| `npm run build` | Exit 0. Next.js 15.5.29, 10 static pages, “Standalone server is ready in .next/standalone.” |
+| `npm test` | Exit 0. Platform, dashboard, and database-editor lines. |
+
+No `.github` workflows. Remote checks on the new PRs are Vercel preview builds, not GitHub Actions.
+
+### Live security headers
+
+`curl -sSI` on 20 November 2026, about 11:31 UTC. There is still no `vercel.json`. `next.config.ts` on `b5107ab` sets `poweredByHeader: false` and no `headers()`.
+
+| Header | `defaultstackr.nl` | `defaultstackr.online` | `www.defaultstackr.cloud` | `defaultstack.vercel.app` |
+| --- | --- | --- | --- | --- |
+| Status | 200, `server: Vercel` | 200, `server: Vercel` | 200, `server: cloudflare`, `cf-ray` present, no `x-vercel-id` | 200, `server: Vercel` |
+| CSP | absent | absent | absent | absent |
+| HSTS | `max-age=63072000` | `max-age=63072000` | absent | `max-age=63072000; includeSubDomains; preload` |
+| `X-Frame-Options` | absent | absent | absent | absent |
+| `X-Content-Type-Options` | absent | absent | absent | absent |
+| `Referrer-Policy` | absent | absent | absent | absent |
+| `Permissions-Policy` | absent | absent | absent | absent |
+| `X-Powered-By` | absent | absent | absent | absent |
+
+Vercel document responses also sent `access-control-allow-origin: *`. The standalone server’s `/` response did not. This repo does not set that header on the homepage. `src/app/api/reviews/route.ts` does set `Access-Control-Allow-Origin: *` on the reviews JSON. `src/app/api/customer-entry/status/route.ts` echoes only an allowlisted origin.
+
+[PR #13](https://github.com/codingbydefault/defaultstack/pull/13) adds nosniff, `Referrer-Policy`, `X-Frame-Options: SAMEORIGIN`, a permissions policy, and a same-origin CSP (`script-src` and `style-src` keep `'unsafe-inline'` because the live homepage contains inline scripts; `connect-src` and `form-action` also allow `https://www.defaultstackr.cloud`). HSTS `max-age=63072000` is sent only for host `www.defaultstackr.cloud` and `defaultstackr.cloud`, so it does not sit in front of Vercel’s stronger `vercel.app` header. `includeSubDomains` is omitted so this header does not pin `*.defaultstackr.cloud`. Local `curl` on the standalone server showed those headers on `/`, `/prijzen`, and the `/app` redirect. Headless Chrome loaded the local homepage with no Content-Security-Policy console error. Production URLs were not deployed, so the live table above is unchanged.
+
+### Performance
+
+Next.js 15.5.29 build table on `b5107ab` (the table’s sizes are the build report, not a second compressor run): `/` is 4.56 kB with 122 kB first-load JS. Shared first-load JS is 103 kB (`1255-….js` 46.6 kB, `4bd1b696-….js` 54.2 kB, other 1.94 kB). Largest route first load is `/app/projects/[id]` at 131 kB. Raw files under `.next/static`, largest first: `framework-….js` 219012 bytes, `1255-….js` 174134, `4bd1b696-….js` 173020, `main-….js` 129008, `polyfills-….js` 112594.
+
+Lighthouse 13.6.0, mobile form factor (412×823), headless Chrome, 20 November 2026. Performance category:
+
+| URL | Score | FCP | LCP | TBT | CLS | Speed index | TTI |
+| --- | ---: | --- | --- | --- | --- | --- | --- |
+| `https://defaultstackr.nl/` | 100 | 1.0 s | 1.0 s | 50 ms | 0 | 1.2 s | 2.7 s |
+| `https://defaultstackr.online/` | 100 | 0.9 s | 0.9 s | 90 ms | 0.002 | 1.2 s | 2.6 s |
+| `https://www.defaultstackr.cloud/` | 99 | 1.4 s | 1.4 s | 50 ms | 0.002 | 2.9 s | 3.1 s |
+| `https://defaultstack.vercel.app/` | 100 | 0.9 s | 0.9 s | 40 ms | 0.002 | 0.9 s | 2.1 s |
+
+### Accessibility
+
+Live HTML for all four URLs: `<html lang="nl">`, one `<img>` (`/stripe-wordmark-white.svg`, `alt="Stripe"`), form controls wrapped in `<label>` or given `aria-label`. Lighthouse accessibility score was 97 on each URL. Passing axe-linked audits included `image-alt`, `html-has-lang`, and `label` (Lighthouse 13.6.0 points at axe-core 4.14 rule docs). A separate axe CLI was not run.
+
+Two audits scored 0 on every URL:
+
+- `link-in-text-block`: `<a href="/privacy">` contrast 1.65:1 against surrounding text (link `#424a58`, text `#626b77`; minimum cited 3:1).
+- `label-content-name-mismatch`: `<a class="brand" aria-label="DefaultStackr, naar home">`. The visible text includes “by CodedByDefault”, which is not in the accessible name (`src/app/page.tsx`).
+
+Not changed in this pass. Both are visual or copy changes, not the header or patch updates.
+
+### Smoke-test repo
+
+`codingbydefault/defaultstackr-smoke-test` cloned read-only to a temp directory. HEAD `b522d5e10cb1daccbd3a020230c5761e2bf28e93` (19 November 2026, “Use Space to restart Snake and arrow keys to steer”). No runtime dependencies. `npm ci` audited 1 package, 0 vulnerabilities. `npm outdated` printed nothing. `npm run build` (`node --check` on `server.mjs`, `public/game.js`, `public/game-core.mjs`) exit 0. `npm test` passed 6 tests, 0 failed. `server.mjs` sends `X-Content-Type-Options: nosniff` on health, version, and asset responses. `public/index.html` has `lang="nl"`, no `<img>`, and the canvas has `role="img"` plus `aria-label="Snake speelveld"`. No pull request was opened against that repo. It was not opened in a browser. **Niet geverifieerd** as a deployed URL.
+
+### Not verified
+
+- Live headers after PR #13. Not merged and not deployed. Cloudflare was not reconfigured, so it is also **niet geverifieerd** whether the edge will forward the new origin HSTS once the home server runs that build.
+- `defaultstackr-api` was not cloned again. The earlier section still stands.
+- The home Ubuntu host was not logged into.
+- Vercel preview for [PR #13](https://github.com/codingbydefault/defaultstack/pull/13) succeeded (check “Vercel” on that PR). The Vercel preview for [PR #14](https://github.com/codingbydefault/defaultstack/pull/14) was still running when this section was committed. Local lint, build, and tests on both branches had already exited 0. There is no GitHub Actions workflow in this repo.
