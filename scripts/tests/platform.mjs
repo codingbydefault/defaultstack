@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import http from 'node:http';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -6,6 +7,17 @@ import assert from 'node:assert/strict';
 const directory = await mkdtemp(path.join(os.tmpdir(), 'defaultstack-test-'));
 const port = 3197;
 const base = `http://127.0.0.1:${port}`;
+
+function requestWithHost(host) {
+  return new Promise((resolve, reject) => {
+    const req = http.request({ hostname: '127.0.0.1', port, path: '/', method: 'GET', headers: { host, accept: 'text/html' } }, res => {
+      res.resume();
+      resolve({ status: res.statusCode, headers: res.headers });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 const server = spawn(process.execPath, ['scripts/start-standalone.mjs'], {
   env: { ...process.env, NODE_ENV: 'production', PORT: String(port), BIND_HOST: '127.0.0.1', DEFAULTSTACK_STATE_DIR: directory, ENABLE_LOCAL_DATABASE_EDITOR: 'false' }, stdio: ['ignore', 'ignore', 'pipe'],
 });
@@ -24,7 +36,31 @@ try {
   assert.equal(appPage.status, 307);
   assert.match(appPage.headers.get('location') || '', /\/app\/login/);
   assert.equal((await fetch(`${base}/app/login`)).status, 200);
-  const homepage = await (await fetch(base)).text();
+  const homeResponse = await fetch(base);
+  const homepage = await homeResponse.text();
+  assert.equal(homeResponse.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(homeResponse.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+  assert.equal(homeResponse.headers.get('x-frame-options'), 'SAMEORIGIN');
+  assert.match(homeResponse.headers.get('permissions-policy') || '', /camera=\(\).*microphone=\(\).*geolocation=\(\)/);
+  const csp = homeResponse.headers.get('content-security-policy') || '';
+  assert.match(csp, /default-src 'self'/);
+  assert.match(csp, /frame-ancestors 'self'/);
+  assert.match(csp, /object-src 'none'/);
+  assert.match(csp, /form-action 'self' https:\/\/www\.defaultstackr\.cloud/);
+  assert.match(csp, /connect-src 'self' https:\/\/www\.defaultstackr\.cloud/);
+  assert.equal(homeResponse.headers.get('strict-transport-security'), null);
+  assert.equal(homeResponse.headers.get('x-powered-by'), null);
+  const asset = await fetch(`${base}/stripe-wordmark-white.svg`);
+  assert.equal(asset.status, 200);
+  assert.equal(asset.headers.get('x-content-type-options'), 'nosniff');
+  const cloudHost = await requestWithHost('www.defaultstackr.cloud');
+  assert.equal(cloudHost.status, 200);
+  assert.equal(cloudHost.headers['strict-transport-security'], 'max-age=63072000');
+  assert.equal(cloudHost.headers['x-frame-options'], 'SAMEORIGIN');
+  const apexHost = await requestWithHost('defaultstackr.cloud');
+  assert.equal(apexHost.headers['strict-transport-security'], 'max-age=63072000');
+  const vercelHost = await requestWithHost('defaultstackr.nl');
+  assert.equal(vercelHost.headers['strict-transport-security'], undefined);
   assert(homepage.includes('https://www.defaultstackr.cloud'), 'canonical domain matches');
   assert(!homepage.includes('defaultstackr.online'), 'mistaken .online domain removed');
   assert(!homepage.includes('defaultstack.online'), 'original domain removed');
