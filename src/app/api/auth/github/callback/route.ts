@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { customerAuth } from '@/lib/auth/customer';
-import { authBaseURL, customerSessionIssued, githubSignInConfigured } from '@/lib/auth/github-signin.mjs';
+import { authBaseURL, githubSignInConfigured } from '@/lib/auth/github-signin.mjs';
+import { githubCallbackResponse } from '@/lib/auth/github-response.mjs';
 import { sessionCookieOptions } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
@@ -26,16 +27,5 @@ export async function GET(request: Request) {
   } catch {
     return NextResponse.redirect(new URL('/app/login?error=github_failed', request.url), { status: 303, headers: { 'Cache-Control': 'no-store' } });
   }
-  const headers = new Headers({ 'Cache-Control': 'no-store' });
-  const location = internal.headers.get('location');
-  if (location) headers.set('location', location);
-  const response = new NextResponse(null, { status: internal.status || 302, headers });
-  let customerSession = false;
-  for (const cookie of internal.headers.getSetCookie()) {
-    response.headers.append('set-cookie', cookie);
-    if (customerSessionIssued(cookie)) customerSession = true;
-  }
-  // A customer session must not keep an admin ds_session. portalIdentity checks that cookie first.
-  if (customerSession) response.cookies.set({ ...sessionCookieOptions, value: '', maxAge: 0 });
-  return response;
+  return githubCallbackResponse(internal, sessionCookieOptions);
 }

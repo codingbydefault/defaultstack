@@ -3,7 +3,8 @@ import { spawn } from 'node:child_process';
 import { randomBytes, scryptSync } from 'node:crypto';
 import { betterAuth } from 'better-auth';
 import { memoryAdapter } from 'better-auth/adapters/memory';
-import { createSessionToken, readSession } from '../../src/lib/auth/session.ts';
+import { githubCallbackResponse } from '../../src/lib/auth/github-response.mjs';
+import { createSessionToken, readSession, sessionCookieOptions } from '../../src/lib/auth/session.ts';
 import {
   accountLinkingOptions,
   accountOptions,
@@ -137,7 +138,7 @@ async function finish(script) {
   const state = new URL(begun.payload.url).searchParams.get('state');
   assert.equal(new URL(begun.payload.url).searchParams.get('redirect_uri'), 'http://localhost:3000/api/auth/github/callback');
   const done = await callback(auth, begun.response, state);
-  return { db, done, calls, begun };
+  return { db, done, calls, begun, auth };
 }
 
 const unverified = await finish({
@@ -155,6 +156,13 @@ const created = await finish({
 });
 assert.match(created.done.headers.get('location') || '', /\/app$/);
 assert.equal(created.db.user.length, 1);
+const forwardedCallback = githubCallbackResponse(created.done, sessionCookieOptions);
+const forwardedCookies = forwardedCallback.headers.getSetCookie();
+assert(forwardedCookies.some(cookie => cookie.includes('session_token=') && !cookie.includes('Max-Age=0')), 'real customer session survives clearing the admin cookie');
+assert(forwardedCookies.some(cookie => cookie.startsWith('ds_session=;') && cookie.includes('Max-Age=0')), 'previous admin access is cleared');
+assert.equal(forwardedCallback.headers.get('location'), created.done.headers.get('location'));
+assert.equal((await created.auth.api.getSession({ headers: new Headers({ cookie: cookieHeader(forwardedCallback) }) })).user.id, created.db.user[0].id, 'forwarded cookies authenticate the actual customer');
+
 assert.equal(created.db.user[0].email, 'ada@example.com');
 assert.equal(created.db.user[0].emailVerified, true);
 assert.equal(created.db.user[0].name, 'Ada Lovelace');

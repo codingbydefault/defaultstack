@@ -5,7 +5,7 @@ import { siteDb } from '@/lib/site-db';
 export const dynamic = 'force-dynamic';
 
 const ALLOWED_ORIGINS = new Set([
-  'https://www.defaultstackr.cloud',
+  'https://www.defaultstackr.cloud', 'https://defaultstackr.cloud',
   'https://defaultstackr.nl', 'https://www.defaultstackr.nl',
   'https://defaultstackr.online', 'https://www.defaultstackr.online',
 ]);
