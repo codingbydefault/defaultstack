@@ -1,3 +1,4 @@
+import { PUBLIC_SITE_URL } from '@/lib/site';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -25,8 +26,8 @@ function authNotice(result: string | undefined, error: string | undefined): stri
   return 'Aanmelden is mislukt. Probeer het opnieuw.';
 }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; admin?: string; provider?: string; result?: string; error?: string }> }) {
-  const [{ next, admin, provider, result, error }, jar] = await Promise.all([searchParams, cookies()]);
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; admin?: string; provider?: string; result?: string; error?: string; mode?: string }> }) {
+  const [{ next, admin, provider, result, error, mode }, jar] = await Promise.all([searchParams, cookies()]);
   const destination = safeNextPath(next);
   const notice = authNotice(result, error);
   if (admin === '1') {
@@ -40,13 +41,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <div className="ambient a" />
       <div className="ambient b" />
       <div className="floating-shapes login-shapes" aria-hidden="true"><span /><span /><span /></div>
-      <Link href="/" className="brand login-brand">
+      <Link href={PUBLIC_SITE_URL} className="brand login-brand">
         <span className="brand-icon"><i /><i /><i /></span>
         <span>Default<span className="accent">Stackr</span><small>by CodedByDefault</small></span>
       </Link>
       <div className="login-theme-control"><ThemeToggle /></div>
       {admin === '1' ? <LoginForm configured={passwordHashConfigured() && Boolean(sessionSecret())} nextPath={destination} /> :
-        <section className="login-card customer-login-card"><p className="console-eyebrow">DEFAULTSTACKR / WERKRUIMTE</p><h1>Welkom bij jouw stack.</h1><p>Log in of maak een account om je projecten te beheren.</p>{notice && <p role="alert" className="db-error">{notice}</p>}<CustomerAuthForm provider={provider} githubSignIn={githubSignInConfigured()} githubSignInHref={githubSignInHref()} /></section>}
+        <section className="login-card customer-login-card"><p className="console-eyebrow">DEFAULTSTACKR / WERKRUIMTE</p><h1>Welkom bij jouw stack.</h1><p>Log in of maak een account om je projecten te beheren.</p>{notice && <p role="alert" className="db-error">{notice}</p>}<CustomerAuthForm initialMode={mode === 'register' ? 'register' : 'login'} provider={provider} githubSignIn={githubSignInConfigured()} githubSignInHref={githubSignInHref()} /></section>}
     </main>
   );
 }

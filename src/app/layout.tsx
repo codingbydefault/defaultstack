@@ -20,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(domain.origin),
     alternates: { canonical: "./" },
+  ...(domain.kind === 'admin' ? { robots: { index: false, follow: false } } : {}),
     title: english ? 'DefaultStackR — Your stack. Your cloud.' : "DefaultStackr — Bouw. Beheer. Groei.",
     description:
       english ? 'DefaultStackR by CodedByDefault: one workspace for applications, databases and deployments.' : "DefaultStackr van CodedByDefault: één werkruimte voor projecten, databases en uitrollen.",

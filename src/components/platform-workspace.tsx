@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { SITE_DOMAIN } from '@/lib/site';
+import { SITE_DOMAIN, PUBLIC_SITE_URL } from '@/lib/site';
 import type { PlatformStatus } from '@/lib/platform-status';
 const DatabaseEditor = dynamic(() => import('./database-editor'), { loading: () => <p role="status">Opening table editor…</p> });
 type View = 'Overview' | 'Deployments' | 'Database' | 'Migrations & RLS' | 'Settings';
@@ -57,10 +57,10 @@ export default function PlatformWorkspace() {
     setCommand(`bash deploy/apps/deploy.sh ${quote(name)} ${quote(source.trim())} ${quote(port)}\nnode deploy/apps/export-status.mjs`);
   }
   return <main className="platform-console db-shell">
-    <aside className="console-sidebar"><Link href="/" className="console-brand"><span className="brand-icon"><i/><i/><i/></span><span>Default<span className="accent">Stackr</span><small>YOUR OWN CLOUD</small></span></Link>
+    <aside className="console-sidebar"><Link href="/app" className="console-brand"><span className="brand-icon"><i/><i/><i/></span><span>Default<span className="accent">Stackr</span><small>YOUR OWN CLOUD</small></span></Link>
       <div className="workspace-switch"><span className="workspace-avatar">C</span><div>CodedByDefault<small>Personal workspace</small></div><span className="workspace-dot"/></div>
       <p className="console-label">WORKSPACE</p><nav aria-label="Platform navigation">{navigation.map(item => <button key={item.name} className={view === item.name ? 'active' : ''} aria-current={view === item.name ? 'page' : undefined} onClick={() => { setView(item.name); setSelected(null); }}><span aria-hidden="true">{item.symbol}</span>{item.name}</button>)}</nav>
-      <div className="sidebar-bottom"><span className="local-pill">● Self-hosted edition</span><p>Your code. Your data.<br/>Your infrastructure.</p><Link href="/">← Public website</Link></div>
+      <div className="sidebar-bottom"><span className="local-pill">● Self-hosted edition</span><p>Your code. Your data.<br/>Your infrastructure.</p><a href={PUBLIC_SITE_URL}>← Public website</a></div>
     </aside>
     <section className="console-body"><header className="console-header"><div><span>Workspace</span><b>/</b><strong>{view}</strong></div><div className="console-header-actions"><span className="environment">Home server</span><span className="user-avatar" aria-label="CodedByDefault workspace">C</span></div></header>
       <div className="console-content"><div className="console-page-heading"><div><p className="console-eyebrow">DEFAULTSTACKR / PLATFORM</p><h1>{view === 'Overview' ? 'Build something of your own.' : view}</h1><p>{view === 'Overview' ? 'One workspace for your applications, deployments and data.' : view === 'Deployments' ? 'Follow the applications running on your own infrastructure.' : view === 'Database' ? 'Explore and manage the data behind your applications.' : view === 'Migrations & RLS' ? 'Version your schema. Keep every owner’s data separate.' : 'Connect your infrastructure to this workspace.'}</p></div>{['Overview', 'Deployments'].includes(view) && <button className="primary" onClick={() => { setWizard(true); setCommand(''); }}>+ Deploy application</button>}</div>
