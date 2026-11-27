@@ -50,8 +50,8 @@ export function Shell({ mock, identity, children }: { mock: boolean; identity: P
           {mock && <span className="mock-pill">Mock-modus</span>}
           <span className="local-pill"><span className="pulse-dot" /> Eigen infrastructuur</span>
           <p>Je projecten, code en data<br />onder één dak.</p>
-          <Link href="/prijzen">Pakketten en verbruik ↗</Link>
-          <Link href="/">← Publieke site</Link>
+          <Link href="https://defaultstackr.nl/prijzen">Pakketten en verbruik ↗</Link>
+          <Link href="https://defaultstackr.nl">← Publieke site</Link>
         </div>
       </aside>
       <section className="console-body">
@@ -61,8 +61,8 @@ export function Shell({ mock, identity, children }: { mock: boolean; identity: P
             <ThemeToggle />
             {mock && <span className="mock-pill">Voorbeelddata</span>}
             <span className="header-live"><span className="pulse-dot" /> PORTAAL ACTIEF</span>
-            <Link href="/">Site</Link>
-            <Link href="/prijzen">Pakketten</Link>
+            <Link href="https://defaultstackr.nl">Site</Link>
+            <Link href="https://defaultstackr.nl/prijzen">Pakketten</Link>
             <button type="button" onClick={() => void logout()} disabled={leaving}>{leaving ? 'Bezig…' : 'Uitloggen'}</button>
           </div>
         </header>
