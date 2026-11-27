@@ -33,6 +33,7 @@ export async function GET(request: Request) {
       githubId: user.id as number,
       login: user.login,
       portalId: identity.kind === 'admin' ? 'admin' : identity.id,
+      appClientId: config.clientId,
     });
     const result = NextResponse.redirect(`${config.origin}/app/projects/new?github=connected`);
     result.cookies.set(GITHUB_COOKIE, sealed, githubCookieOptions);

@@ -1,7 +1,6 @@
 import { readFileSync, statSync } from 'node:fs';
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { sessionSecret } from '@/lib/auth/session';
-import { customerAuth } from '@/lib/auth/customer';
 import { SITE_URL } from '@/lib/site';
 
 export const GITHUB_COOKIE = 'ds_github';
@@ -14,6 +13,7 @@ export type GitHubConnection = {
   githubId: number;
   login: string;
   portalId?: string;
+  appClientId?: string;
 };
 
 export function githubConfig() {
@@ -87,24 +87,14 @@ export async function githubJson(path: string, token: string): Promise<unknown> 
     cache: 'no-store',
     signal: AbortSignal.timeout(10000),
   });
-  if (!response.ok) throw new Error(`GitHub API: ${response.status}`);
+  if (!response.ok) throw Object.assign(new Error(`GitHub API: ${response.status}`), {status: response.status});
   return response.json();
-}
-
-export async function githubCustomerToken(headers: Headers): Promise<string | null> {
-  const auth = customerAuth();
-  if (!auth) return null;
-  const accounts = await auth.api.listUserAccounts({ headers });
-  const github = accounts.find(account => account.providerId === 'github');
-  if (!github) return null;
-  const result = await auth.api.getAccessToken({ body: { accountId: github.id }, headers });
-  return result.accessToken;
 }
 
 export async function refreshConnection(connection: GitHubConnection): Promise<GitHubConnection> {
   if (!connection.expiresAt || connection.expiresAt > Date.now() + 60000) return connection;
   const config = githubConfig();
-  if (!config || !connection.refreshToken) throw new Error('GitHub connection expired');
+  if (!config || !connection.refreshToken) throw Object.assign(new Error('GitHub connection expired'), {status: 401});
   const response = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
@@ -113,7 +103,7 @@ export async function refreshConnection(connection: GitHubConnection): Promise<G
     cache: 'no-store', signal: AbortSignal.timeout(10000),
   });
   const token = await response.json() as Record<string, unknown>;
-  if (!response.ok || typeof token.access_token !== 'string') throw new Error('GitHub connection expired');
+  if (!response.ok || typeof token.access_token !== 'string') throw Object.assign(new Error('GitHub connection expired'), {status: 401});
   return { ...connection, accessToken: token.access_token,
     refreshToken: typeof token.refresh_token === 'string' ? token.refresh_token : connection.refreshToken,
     expiresAt: typeof token.expires_in === 'number' ? Date.now() + token.expires_in * 1000 : undefined };

@@ -1,7 +1,9 @@
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { portalIdentity } from '@/lib/auth/portal';
-import { GITHUB_COOKIE, githubConfig, githubCustomerToken, githubJson, openConnection } from '@/lib/github/connection';
+import { GITHUB_COOKIE, githubConfig, openConnection } from '@/lib/github/connection';
+
+import { repositoryConnection } from '@/lib/github/repository-connection.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,25 +12,10 @@ export async function GET() {
   const identity = await portalIdentity();
   if (!identity) return NextResponse.json({ error: 'Niet ingelogd.' }, { status: 401 });
   const config = githubConfig();
-  const opened = openConnection(jar.get(GITHUB_COOKIE)?.value);
-  const connection = opened && (opened.portalId ?? 'admin') === (identity.kind === 'admin' ? 'admin' : identity.id) ? opened : null;
-  let login = connection?.login ?? null;
-  let connected = Boolean(config && connection);
-  let automatic = false;
-  if (config && identity.kind === 'customer' && !connection) {
-    try {
-      const token = await githubCustomerToken(await headers());
-      if (token) {
-        const user = await githubJson('/user', token) as { login?: string };
-        login = typeof user.login === 'string' ? user.login : null;
-        connected = Boolean(login);
-        automatic = connected;
-      }
-    } catch { connected = false; }
-  }
+  const connection = config ? repositoryConnection(openConnection(jar.get(GITHUB_COOKIE)?.value), identity, config.clientId) : null;
   return NextResponse.json({
     privateDeployReady: identity.kind === 'customer' && identity.owner === true && config?.privateDeployReady === true,
-    configured: Boolean(config), connected, login, automatic, customer: identity.kind === 'customer',
+    configured: Boolean(config), connected: Boolean(connection), login: connection?.login ?? null, automatic: false, customer: identity.kind === 'customer',
     installUrl: config ? `https://github.com/apps/${config.appSlug}/installations/new` : null,
   }, { headers: { 'Cache-Control': 'no-store' } });
 }

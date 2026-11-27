@@ -10,6 +10,6 @@ export async function githubResponse(response) {
   try { body = await response.json(); }
   catch { throw new Error('Het antwoord van de GitHub-koppeling kon niet worden gelezen. Probeer het opnieuw.'); }
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('De GitHub-koppeling gaf geen geldig antwoord. Probeer het opnieuw.');
-  if (!response.ok) throw new Error(typeof body.error === 'string' ? body.error : 'GitHub ophalen mislukt. Probeer het opnieuw.');
+  if (!response.ok) throw Object.assign(new Error(typeof body.error === 'string' ? body.error : 'GitHub ophalen mislukt. Probeer het opnieuw.'), {status: response.status, code: body.code});
   return body;
 }

@@ -1,7 +1,9 @@
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { portalIdentity } from '@/lib/auth/portal';
-import { GITHUB_COOKIE, githubConfig, githubCookieOptions, githubCustomerToken, githubJson, openConnection, refreshConnection, sealConnection } from '@/lib/github/connection';
+import { GITHUB_COOKIE, githubConfig, githubCookieOptions, githubJson, openConnection, refreshConnection, sealConnection } from '@/lib/github/connection';
+
+import { repositoryConnection } from '@/lib/github/repository-connection.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,13 +17,14 @@ export async function GET() {
   const jar = await cookies();
   const identity = await portalIdentity();
   if (!identity) return NextResponse.json({ error: 'Niet ingelogd.' }, { status: 401 });
-  if (!githubConfig()) return NextResponse.json({ error: 'GitHub is nog niet ingesteld.' }, { status: 503 });
+  const config = githubConfig();
+  if (!config) return NextResponse.json({ error: 'GitHub is nog niet ingesteld.' }, { status: 503 });
   const current = openConnection(jar.get(GITHUB_COOKIE)?.value);
   try {
-    const cookieConnection = current && (current.portalId ?? 'admin') === (identity.kind === 'admin' ? 'admin' : identity.id) ? current : null;
+    const cookieConnection = repositoryConnection(current, identity, config.clientId);
     const connection = cookieConnection ? await refreshConnection(cookieConnection) : null;
-    const token = connection?.accessToken ?? (identity.kind === 'customer' ? await githubCustomerToken(await headers()) : null);
-    if (!token) return NextResponse.json({ error: 'Koppel eerst je GitHub-account.' }, { status: 401 });
+    const token = connection?.accessToken;
+    if (!token) return NextResponse.json({ error: 'Koppel de GitHub App om je repositories te laden.', code: 'github_app_connection_required' }, { status: 409, headers: { 'Cache-Control': 'no-store' } });
     const data = await githubJson('/user/installations?per_page=100', token) as { installations?: Installation[]; total_count?: number };
     const installations = Array.isArray(data.installations) ? data.installations.filter(item => Number.isSafeInteger(item.id)) : [];
     const groups = await Promise.all(installations.slice(0, 20).map(async installation => {
@@ -38,7 +41,8 @@ export async function GET() {
     const response = NextResponse.json({ items, truncated: (data.total_count || 0) > 20 || groups.some(group => group.truncated) }, { headers: { 'Cache-Control': 'no-store' } });
     if (connection && connection !== current) response.cookies.set(GITHUB_COOKIE, sealConnection(connection), githubCookieOptions);
     return response;
-  } catch {
+  } catch (cause) {
+    if (cause instanceof Error && 'status' in cause && [401,403].includes(Number(cause.status))) return NextResponse.json({error: 'Koppel de GitHub App opnieuw om je repositories te laden.', code: 'github_app_connection_required'}, {status: 409, headers: {'Cache-Control':'no-store'}});
     return NextResponse.json({ error: 'Repositories ophalen mislukt. Koppel GitHub opnieuw of controleer de app-installatie.' }, { status: 502 });
   }
 }

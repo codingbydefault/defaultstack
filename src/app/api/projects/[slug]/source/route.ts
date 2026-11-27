@@ -1,10 +1,12 @@
 import { Buffer } from 'node:buffer';
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { portalIdentity } from '@/lib/auth/portal';
 import { rejectsCrossSite } from '@/lib/auth/guard';
 import { isSafeSegment } from '@/lib/api/contract';
-import { GITHUB_COOKIE, githubCustomerToken, openConnection } from '@/lib/github/connection';
+import { GITHUB_COOKIE, githubConfig, githubCookieOptions, openConnection, refreshConnection, sealConnection } from '@/lib/github/connection';
 import { readLimitedBody } from '@/lib/read-limited-body';
+
+import { repositoryConnection } from '@/lib/github/repository-connection.mjs';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -43,12 +45,15 @@ async function source(slug: string): Promise<Source | Response> {
   if (!match || typeof project?.branch !== 'string') return json({ error: 'Dit project heeft geen geldige GitHub-repository.' }, 422);
   let token: string | null = null;
   try {
-    token = identity.kind === 'customer'
-      ? await githubCustomerToken(await headers())
-      : openConnection((await cookies()).get(GITHUB_COOKIE)?.value)?.accessToken ?? null;
-  } catch { return json({ error: 'GitHub-toegang ophalen mislukt.' }, 502); }
-  if (!token) return json({ error: 'Koppel GitHub aan dit account om code te openen.' }, 409);
-  return { owner: match[1], repo: match[2], branch: project.branch, token };
+    const jar = await cookies();
+    const config = githubConfig();
+    const connection = config ? repositoryConnection(openConnection(jar.get(GITHUB_COOKIE)?.value), identity, config.clientId) : null;
+    if (!connection) return json({ error: 'Koppel de GitHub App aan dit account om code te openen.', code: 'github_app_connection_required' }, 409);
+    const refreshed = await refreshConnection(connection);
+    token = refreshed.accessToken;
+    if (refreshed !== connection) jar.set(GITHUB_COOKIE, sealConnection(refreshed), githubCookieOptions);
+  } catch { return json({ error: 'Koppel de GitHub App opnieuw om code te openen.' }, 409); }
+  return { owner: match[1], repo: match[2], branch: project.branch, token: token! };
 }
 
 function githubUrl(source: Source, path: string): string {

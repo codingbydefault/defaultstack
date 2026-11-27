@@ -1,0 +1,1 @@
+export function repositoryConnection<T extends {accessToken: string; portalId?: string; appClientId?: string}>(connection: T | null, identity: {kind: string; id?: string} | null, clientId?: string): T | null;
