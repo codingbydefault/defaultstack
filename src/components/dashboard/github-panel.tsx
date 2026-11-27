@@ -1,10 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createAuthClient } from 'better-auth/react';
 
 type Status = { configured: boolean; connected: boolean; automatic: boolean; customer: boolean; login: string | null; installUrl: string | null };
-const authClient = createAuthClient();
 export type GitHubRepo = { id: number; fullName: string; cloneUrl: string; defaultBranch: string; private: boolean; account: string };
 
 export function GitHubPanel({ onSelect }: { onSelect?: (repo: GitHubRepo) => void }) {
@@ -45,14 +43,7 @@ export function GitHubPanel({ onSelect }: { onSelect?: (repo: GitHubRepo) => voi
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Ontkoppelen mislukt.'); }
   }
 
-  async function connect() {
-    if (!status?.customer) { window.location.assign('/api/github/connect'); return; }
-    setError('');
-    try {
-      const result = await authClient.linkSocial({ provider: 'github', callbackURL: '/app/projects/new' });
-      if (result.error) setError('GitHub koppelen is mislukt.');
-    } catch { setError('GitHub koppelen is mislukt.'); }
-  }
+  function connect() { window.location.assign('/api/github/connect'); }
 
   const matches = repos.filter(repo => repo.fullName.toLocaleLowerCase('nl-NL').includes(search.toLocaleLowerCase('nl-NL')));
   return <section className="console-section github-panel" aria-labelledby="github-panel-title">
