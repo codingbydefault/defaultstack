@@ -176,7 +176,3 @@
 
 .official-brand-logo { display: block; width: 210px; max-width: 100%; height: auto; background: transparent; }
 @media (min-width: 1101px) { .site-footer-grid { grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr)); } }
-
-.official-brand-logo--dark { display: none; }
-html[data-theme='dark'] .official-brand-logo--light { display: none; }
-html[data-theme='dark'] .official-brand-logo--dark { display: block; }

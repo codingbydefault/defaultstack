@@ -151,8 +151,16 @@ async function freePort() {
         assert.equal(appearance.opacity,'1');
         await page.keyboard.press('Escape');
         const logos=page.locator('.official-brand-logo:visible');assert.equal(await logos.count(),1,'one accessible theme logo');
-        assert.equal(await logos.getAttribute('src'),theme==='dark'?'/defaultstackr-logo-dark.svg':'/defaultstackr-logo.svg');
+        assert.equal(await logos.getAttribute('src'),'/defaultstackr-logo-dark.svg');
         assert.equal(await logos.evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','transparent footer logo');
+        const footerBackground=await page.locator('.site-footer').evaluate(e=>getComputedStyle(e).backgroundColor);
+        const asset=await (await fetch(`http://127.0.0.1:${port}`+await logos.getAttribute('src'))).text();
+        const luminosity=color=>{const values=(color.startsWith('#')?color.slice(1).match(/../g).map(v=>parseInt(v,16)):color.match(/[0-9.]+/g).slice(0,3).map(Number)).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});return values[0]*.2126+values[1]*.7152+values[2]*.0722};
+        for(const color of [...asset.matchAll(/<text\b[^>]*fill="(#[A-Fa-f0-9]{6})"/g)].map(m=>m[1])) {
+          const a=luminosity(color),b=luminosity(footerBackground);
+          assert((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5,'logo text contrasts with actual footer surface in '+theme);
+        }
+
       }
       console.log('PASS: GitHub-only sign-in, cookie information dialog, mobile Escape and status contrast in both themes');
       console.log('PASS: real Chromium, both languages, matching layouts, mobile menus, keyboard tabs and pricing calculator');
