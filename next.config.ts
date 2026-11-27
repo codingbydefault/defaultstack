@@ -15,7 +15,7 @@ const securityHeaders = [
       "object-src 'none'",
       "frame-ancestors 'self'",
       "frame-src 'none'",
-      "form-action 'self' https://www.defaultstackr.cloud https://defaultstackr.cloud",
+      "form-action 'self' https://github.com/settings/apps/new https://www.defaultstackr.cloud https://defaultstackr.cloud",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",

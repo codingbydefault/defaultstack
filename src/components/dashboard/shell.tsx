@@ -31,7 +31,7 @@ export function Shell({ mock, identity, children }: { mock: boolean; identity: P
         </Link>
         <div className="workspace-switch">
           <span className="workspace-avatar">D</span>
-          <div>{identity.kind === 'admin' ? 'DefaultStackr' : identity.name}<small>{identity.kind === 'admin' ? 'Beheerwerkruimte' : 'Jouw werkruimte'}</small></div>
+          <div>{identity.kind === 'admin' ? 'DefaultStackr' : identity.name}<small>{identity.kind === 'admin' ? 'Beheerwerkruimte' : identity.owner ? 'Eigenaarsprofiel · onbeperkt' : 'Jouw werkruimte'}</small></div>
           <span className="workspace-dot" />
         </div>
         <p className="console-label">WERKRUIMTE</p>

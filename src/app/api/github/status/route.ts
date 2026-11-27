@@ -15,7 +15,7 @@ export async function GET() {
   let login = connection?.login ?? null;
   let connected = Boolean(config && connection);
   let automatic = false;
-  if (config && identity.kind === 'customer') {
+  if (config && identity.kind === 'customer' && !connection) {
     try {
       const token = await githubCustomerToken(await headers());
       if (token) {

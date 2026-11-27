@@ -20,7 +20,7 @@ export async function GET() {
   try {
     const cookieConnection = current && (current.portalId ?? 'admin') === (identity.kind === 'admin' ? 'admin' : identity.id) ? current : null;
     const connection = cookieConnection ? await refreshConnection(cookieConnection) : null;
-    const token = identity.kind === 'customer' ? await githubCustomerToken(await headers()) : connection?.accessToken;
+    const token = connection?.accessToken ?? (identity.kind === 'customer' ? await githubCustomerToken(await headers()) : null);
     if (!token) return NextResponse.json({ error: 'Koppel eerst je GitHub-account.' }, { status: 401 });
     const data = await githubJson('/user/installations?per_page=100', token) as { installations?: Installation[]; total_count?: number };
     const installations = Array.isArray(data.installations) ? data.installations.filter(item => Number.isSafeInteger(item.id)) : [];

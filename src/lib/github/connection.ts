@@ -1,3 +1,4 @@
+import { readFileSync, statSync } from 'node:fs';
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { sessionSecret } from '@/lib/auth/session';
 import { customerAuth } from '@/lib/auth/customer';
@@ -16,9 +17,20 @@ export type GitHubConnection = {
 };
 
 export function githubConfig() {
-  const clientId = process.env.DEFAULTSTACKR_GITHUB_CLIENT_ID;
-  const clientSecret = process.env.DEFAULTSTACKR_GITHUB_CLIENT_SECRET;
-  const appSlug = process.env.DEFAULTSTACKR_GITHUB_APP_SLUG;
+  let file: Record<string, unknown> = {};
+  const path = process.env.DEFAULTSTACKR_GITHUB_CONFIG_FILE;
+  if (path) {
+    try {
+      const stat = statSync(path);
+      if (!stat.isFile() || stat.size > 8192 || (stat.mode & 0o077) !== 0) return null;
+      const parsed = JSON.parse(readFileSync(path, 'utf8'));
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+      file = parsed;
+    } catch { /* Initial setup has not supplied a private GitHub App configuration yet. */ }
+  }
+  const clientId = typeof file.clientId === 'string' ? file.clientId : process.env.DEFAULTSTACKR_GITHUB_CLIENT_ID;
+  const clientSecret = typeof file.clientSecret === 'string' ? file.clientSecret : process.env.DEFAULTSTACKR_GITHUB_CLIENT_SECRET;
+  const appSlug = typeof file.appSlug === 'string' ? file.appSlug : process.env.DEFAULTSTACKR_GITHUB_APP_SLUG;
   const publicUrl = process.env.DEFAULTSTACKR_PUBLIC_URL || SITE_URL;
   if (!clientId || !clientSecret || !appSlug || !sessionSecret()) return null;
   if (!/^[a-z0-9-]{1,100}$/.test(appSlug) || !/^[A-Za-z0-9_]+$/.test(clientId)) return null;
