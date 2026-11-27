@@ -138,6 +138,22 @@ async function freePort() {
         const lum = value => {const rgb=value.match(/[0-9.]+/g).slice(0,3).map(v=>{v=Number(v)/255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
         const f=lum(badge.fg),b=lum(badge.bg);assert((Math.max(f,b)+.05)/(Math.min(f,b)+.05)>=4.5, 'readable status in '+theme);
       }
+      for (const width of [390,1440]) for (const theme of ['light','dark']) {
+        await page.setViewportSize({width,height:900});
+        await page.goto(`http://defaultstackr.nl:${port}/`,{waitUntil:'networkidle'});
+        await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+        if(width===390) await page.locator('.responsive-nav > summary').click();
+        await page.locator('.auth-nav-login:visible').click();
+        const button=page.locator('dialog.auth-dialog[open] .auth-social-github');
+        await button.waitFor();await page.mouse.move(0,0);
+        const appearance=await button.evaluate(e=>{const s=getComputedStyle(e);return {fg:s.color,expected:s.getPropertyValue('--color-glass-button-ink').trim(),opacity:s.opacity};});
+        assert(['rgb(255, 255, 255)','rgb(249, 248, 252)'].includes(appearance.fg),'GitHub button readable before hover in '+theme);
+        assert.equal(appearance.opacity,'1');
+        await page.keyboard.press('Escape');
+        const logos=page.locator('.official-brand-logo:visible');assert.equal(await logos.count(),1,'one accessible theme logo');
+        assert.equal(await logos.getAttribute('src'),theme==='dark'?'/defaultstackr-logo-dark.svg':'/defaultstackr-logo.svg');
+        assert.equal(await logos.evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','transparent footer logo');
+      }
       console.log('PASS: GitHub-only sign-in, cookie information dialog, mobile Escape and status contrast in both themes');
       console.log('PASS: real Chromium, both languages, matching layouts, mobile menus, keyboard tabs and pricing calculator');
     }

@@ -136,7 +136,7 @@ main { overflow-x: clip; }
 .auth-availability { margin: 0 0 var(--space-md); padding: var(--space-sm) var(--space-md); color: var(--color-ink-soft); background: var(--color-violet-wash); border: 1px solid var(--color-violet-edge); border-radius: var(--radius-control); font-size: 13px; line-height: 1.5; }
 .auth-divider { color: var(--color-muted); letter-spacing: 0; }
 .auth-divider::before, .auth-divider::after { background: var(--color-rule); }
-.auth-switch button, .customer-auth-form a { color: var(--color-accent); }
+.auth-switch button, .customer-auth-form .auth-disclaimer a { color: var(--color-accent); }
 .login-shell .auth-switch button { padding: 0; border: 0; background: none; color: var(--color-accent); box-shadow: none; }
 .legal-header > a:last-child, .legal-content a { color: var(--color-accent); }
 .legal-content h1, .legal-content section h2 { color: var(--color-ink); }

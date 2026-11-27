@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="280" viewBox="0 0 1200 280">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8055e8"/><stop offset="1" stop-color="#9c5ef0"/></linearGradient></defs>
+<g transform="translate(32 69) rotate(-15 65 65)" fill="url(#g)"><rect x="22" y="8" width="88" height="22" rx="7"/><rect x="13" y="43" width="106" height="22" rx="7"/><rect x="3" y="78" width="126" height="22" rx="7"/></g>
+<text x="200" y="139" font-family="Arial,Helvetica,sans-serif" font-size="92" font-weight="800" letter-spacing="-5" fill="#f4f5f8">DefaultStackr</text>
+<text x="205" y="194" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="600" letter-spacing="3" fill="#bac0ce">YOUR STACK. YOUR CLOUD.</text>
+</svg>
