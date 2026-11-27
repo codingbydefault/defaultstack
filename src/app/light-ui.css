@@ -335,3 +335,11 @@ html .landing .landing-actions .outline:hover, html .landing .landing-contact .o
 .pricing-tax-note { margin: 0 0 24px; color: var(--color-muted); max-width: 70ch; font-size: 14px; line-height: 1.7; }
 .footer-trust-badges span { display: inline-flex; align-items: center; gap: 6px; }
 .footer-trust-badges svg { flex: none; }
+
+/* Repository connection states follow the same theme as the dashboard. */
+.platform-console .github-actions p,
+.platform-console .github-connected,
+.platform-console .github-repo small { color: var(--color-muted); }
+.platform-console .github-connected strong { color: var(--color-ink); }
+.platform-console .github-install { color: var(--color-accent); }
+.platform-console .github-repo { background: var(--color-paper-soft); border-color: var(--color-rule); }
