@@ -14,7 +14,7 @@ const securityHeaders = [
       "base-uri 'self'",
       "object-src 'none'",
       "frame-ancestors 'self'",
-      "frame-src 'none'",
+      "frame-src https://*.defaultstackr.cloud",
       "form-action 'self' https://github.com/settings/apps/new https://www.defaultstackr.cloud https://defaultstackr.cloud",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",

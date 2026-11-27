@@ -36,6 +36,7 @@ export type Project = {
   healthPath?: string;
   framework?: string;
   status: ProjectStatus;
+  hasLiveDeployment?: boolean;
   latestDeployment: LatestDeployment | null;
   primaryHostname: string | null;
   previewHostname: string;

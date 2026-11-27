@@ -59,6 +59,7 @@ function toProject(raw: Row, latest?: Row, actorUserId: string | null = null): P
     healthPath: string(raw.health_path, '/'),
     framework: string(raw.framework, 'next'),
     status: deployment?.status === 'queued' || deployment?.status === 'building' ? 'building' : deployment?.status === 'failed' ? 'failed' : raw.current_deployment_id ? 'ready' : 'idle',
+    hasLiveDeployment: Boolean(raw.current_deployment_id),
     latestDeployment: deployment ? { id: deployment.id, status: deployment.status, createdAt: deployment.createdAt, commitMessage: null } : null,
     primaryHostname: null,
     previewHostname: `${slug}.defaultstackr.cloud`,

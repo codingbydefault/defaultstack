@@ -343,3 +343,22 @@ html .landing .landing-actions .outline:hover, html .landing .landing-contact .o
 .platform-console .github-connected strong { color: var(--color-ink); }
 .platform-console .github-install { color: var(--color-accent); }
 .platform-console .github-repo { background: var(--color-paper-soft); border-color: var(--color-rule); }
+
+.platform-console .project-address-link { display: inline-flex; align-items: flex-start; gap: 8px; color: var(--color-accent); text-decoration: underline; text-underline-offset: 4px; overflow-wrap: anywhere; }
+.project-address-link svg { flex: none; margin-top: 3px; }
+.project-live-preview { min-width: 0; }
+.project-preview-heading { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-md); }
+.project-preview-heading h2 { margin: 0 0 var(--space-xs); font-size: 22px; }
+.project-preview-heading p, .project-preview-hint { margin: 0; color: var(--color-muted); font-size: 13px; line-height: 1.6; }
+.project-preview-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); }
+.project-preview-actions a { display: inline-flex; align-items: center; gap: var(--space-xs); }
+.project-preview-window { max-width: 760px; overflow: hidden; border: 1px solid var(--color-rule); border-radius: 12px; background: var(--color-paper); }
+.project-preview-address { display: flex; align-items: center; gap: var(--space-md); padding: 12px 14px; border-bottom: 1px solid var(--color-rule); background: var(--color-paper-soft); color: var(--color-muted); font-size: 12px; overflow-wrap: anywhere; }
+.project-preview-address > span:first-child { display: flex; flex: none; gap: 5px; }
+.project-preview-address i { width: 6px; height: 6px; border-radius: 50%; background: var(--color-muted); opacity: .5; }
+.project-preview-viewport { position: relative; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; background: var(--color-paper); }
+.project-preview-viewport iframe { position: absolute; left: 0; top: 0; width: 1280px; height: 800px; border: 0; transform-origin: top left; pointer-events: none; }
+.project-preview-state { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--space-lg); background: var(--color-paper); color: var(--color-muted); text-align: center; }
+.project-preview-state p { max-width: 42ch; line-height: 1.6; }
+.project-preview-hint { margin-top: var(--space-sm); }
+@media (max-width: 520px) { .project-preview-actions { width: 100%; } }

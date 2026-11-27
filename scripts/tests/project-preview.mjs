@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {projectWebsiteUrl,projectPreviewUrl} from '../../src/lib/projects/preview.mjs';
+const live={slug:'plainwork',previewHostname:'plainwork.defaultstackr.cloud',status:'ready'};
+assert.equal(projectWebsiteUrl('PlainworkStudio.nl'),'https://plainworkstudio.nl');
+for(const host of ['',null,'localhost','127.0.0.1','javascript:alert(1)','plainwork.cloud/path','user@plainwork.cloud','plainwork.cloud:443','plainwork.cloud\n','-bad.cloud'])assert.equal(projectWebsiteUrl(host),null);
+assert.equal(projectPreviewUrl(live),'https://plainwork.defaultstackr.cloud');
+assert.equal(projectPreviewUrl({...live,status:'idle'}),null);
+assert.equal(projectPreviewUrl({...live,status:'failed',hasLiveDeployment:true}),'https://plainwork.defaultstackr.cloud','failed rebuild preserves the last live preview');
+assert.equal(projectPreviewUrl({...live,hasLiveDeployment:false}),null);
+for(const hostname of ['defaultstackr.cloud','evil.test','plainwork.defaultstackr.cloud.evil.test','other.defaultstackr.cloud'])assert.equal(projectPreviewUrl({...live,previewHostname:hostname}),null);
+for(const slug of ['app','api','admin','../plainwork'])assert.equal(projectPreviewUrl({...live,slug,previewHostname:slug+'.defaultstackr.cloud'}),null);
+console.log('PASS: project links reject unsafe addresses; live previews use only their own platform host and retain the last successful deployment');
