@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { githubResponse } from '@/lib/github/response.mjs';
 
-type Status = { configured: boolean; connected: boolean; automatic: boolean; customer: boolean; login: string | null; installUrl: string | null };
+type Status = { privateDeployReady?: boolean; configured: boolean; connected: boolean; automatic: boolean; customer: boolean; login: string | null; installUrl: string | null };
 export type GitHubRepo = { id: number; fullName: string; cloneUrl: string; defaultBranch: string; private: boolean; account: string };
 
 export function GitHubPanel({ onSelect }: { onSelect?: (repo: GitHubRepo) => void }) {
@@ -16,19 +17,17 @@ export function GitHubPanel({ onSelect }: { onSelect?: (repo: GitHubRepo) => voi
   async function load() {
     setLoading(true); setError('');
     try {
-      const statusResponse = await fetch('/api/github/status', { cache: 'no-store' });
-      const details = await statusResponse.json() as Status & { error?: string };
-      if (!statusResponse.ok) throw new Error(details.error || 'GitHub-status laden mislukt.');
+      const statusResponse = await fetch('/api/github/status', { cache: 'no-store', signal: AbortSignal.timeout(15000) });
+      const details = await githubResponse(statusResponse) as unknown as Status;
       setStatus(details);
       if (details.connected) {
-        const reposResponse = await fetch('/api/github/repositories', { cache: 'no-store' });
-        const data = await reposResponse.json() as { items?: GitHubRepo[]; truncated?: boolean; error?: string };
-        if (!reposResponse.ok) throw new Error(data.error || 'Repositories laden mislukt.');
+        const reposResponse = await fetch('/api/github/repositories', { cache: 'no-store', signal: AbortSignal.timeout(15000) });
+        const data = await githubResponse(reposResponse) as { items?: GitHubRepo[]; truncated?: boolean };
         setRepos(Array.isArray(data.items) ? data.items : []);
         setTruncated(data.truncated === true);
       } else { setRepos([]); setTruncated(false); }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'GitHub laden mislukt.');
+      setError(cause instanceof Error && !['TimeoutError','AbortError','TypeError'].includes(cause.name) ? cause.message : 'De verbinding met GitHub is onderbroken. Probeer het opnieuw.');
     } finally { setLoading(false); }
   }
 
@@ -49,18 +48,18 @@ export function GitHubPanel({ onSelect }: { onSelect?: (repo: GitHubRepo) => voi
   return <section className="console-section github-panel" aria-labelledby="github-panel-title">
     <div className="section-title"><div><p className="console-eyebrow">BRONCODE</p><h2 id="github-panel-title">GitHub koppeling</h2><p>Kies een repository waarvoor de DefaultStackr GitHub App toegang heeft.</p></div><span className="github-mark" aria-hidden="true">⌘</span></div>
     {loading ? <p role="status" className="field-hint">GitHub laden…</p> : <>
-      {error && <p role="alert" className="db-error">{error}</p>}
-      {!status?.configured ? <p className="console-callout">De GitHub App is nog niet ingesteld op de server. Zodra de beheerder de koppeling configureert, kun je hier je repositories kiezen.</p> : !status.connected ? <div className="github-actions"><button type="button" className="primary" onClick={() => void connect()}>Koppel GitHub <span aria-hidden="true">↗</span></button><p>Je meldt je aan bij GitHub en kiest welke repositories de app mag zien.</p></div> : <>
+      {error && <div><p role="alert" className="db-error">{error}</p><button type="button" className="outline" onClick={()=>void load()}>Opnieuw proberen</button></div>}
+      {!error && (!status?.configured ? <p className="console-callout">De GitHub App is nog niet ingesteld op de server. Zodra de beheerder de koppeling configureert, kun je hier je repositories kiezen.</p> : !status.connected ? <div className="github-actions"><button type="button" className="primary" onClick={() => void connect()}>Koppel GitHub <span aria-hidden="true">↗</span></button><p>Je meldt je aan bij GitHub en kiest welke repositories de app mag zien.</p></div> : <>
         <div className="github-connected"><span className="pulse-dot" /> Verbonden als <strong>{status.login}</strong>{!status.automatic && <button type="button" onClick={() => void disconnect()}>Ontkoppelen</button>}</div>
         {repos.length === 0 ? <p className="console-callout">De GitHub App heeft nog geen toegang tot repositories. Installeer de app en selecteer je projecten.</p> : <>
           <label className="projects-search github-search"><span aria-hidden="true">⌕</span><input type="search" aria-label="Zoek GitHub-repositories" placeholder="Zoek repositories" value={search} onChange={event => setSearch(event.target.value)} /></label>
-          <div className="github-repos">{matches.map(repo => <div className="github-repo" key={repo.id}><div><strong>{repo.fullName}</strong><small>{repo.private ? 'Privé' : 'Publiek'} · {repo.defaultBranch}</small></div>{onSelect && <button type="button" disabled={repo.private} title={repo.private ? 'Privé-repositories vereisen nog deploytoegang voor de worker.' : undefined} onClick={() => onSelect(repo)}>Selecteer ↗</button>}</div>)}</div>
+          <div className="github-repos">{matches.map(repo => <div className="github-repo" key={repo.id}><div><strong>{repo.fullName}</strong><small>{repo.private ? 'Privé' : 'Publiek'} · {repo.defaultBranch}</small></div>{onSelect && <button type="button" disabled={repo.private && !status.privateDeployReady} title={repo.private && !status.privateDeployReady ? 'Privé-repositories vereisen nog deploytoegang voor de worker.' : undefined} onClick={() => onSelect(repo)}>Selecteer ↗</button>}</div>)}</div>
           {matches.length === 0 && <p className="field-hint">Geen repositories gevonden.</p>}
           {truncated && <p className="field-hint">Er zijn meer repositories dan hier worden getoond. Verfijn de selectie in de GitHub App.</p>}
-          {repos.some(repo => repo.private) && onSelect && <p className="field-hint">Privé-repositories zijn zichtbaar, maar worden pas selecteerbaar zodra de deploy-worker een installatie-token gebruikt.</p>}
+          {!status.privateDeployReady && repos.some(repo => repo.private) && onSelect && <p className="field-hint">Privé-repositories zijn zichtbaar, maar worden pas selecteerbaar zodra de deploy-worker een installatie-token gebruikt.</p>}
         </>}
         {status.installUrl && <a className="github-install" href={status.installUrl} target="_blank" rel="noreferrer">Repositories toevoegen via GitHub ↗</a>}
-      </>}
+      </>)}
     </>}
   </section>;
 }

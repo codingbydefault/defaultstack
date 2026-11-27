@@ -38,7 +38,7 @@ export function githubConfig() {
   try { origin = new URL(publicUrl); } catch { return null; }
   if ((origin.protocol !== 'https:' && !(origin.protocol === 'http:' && origin.hostname === 'localhost'))
     || origin.username || origin.password || origin.search || origin.hash || origin.pathname !== '/') return null;
-  return { clientId, clientSecret, appSlug, origin: origin.origin };
+  return { clientId, clientSecret, appSlug, origin: origin.origin, privateDeployReady: process.env.DEFAULTSTACKR_PRIVATE_DEPLOYS_READY === 'true' && Number.isSafeInteger(file.appId) && typeof file.privateKey === 'string' };
 }
 
 function key(): Buffer | null {

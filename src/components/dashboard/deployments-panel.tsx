@@ -6,7 +6,7 @@ import { ApiError, dashboardApi } from '@/lib/api/client';
 import type { Deployment } from '@/lib/api/types';
 import { chipClass, deploymentStatusLabel, formatWhen } from '@/components/dashboard/format';
 
-export function DeploymentsPanel({ projectId, canDeploy = true }: { projectId: string; canDeploy?: boolean }) {
+export function DeploymentsPanel({ projectId, canDeploy = false }: { projectId: string; canDeploy?: boolean }) {
   const [items, setItems] = useState<Deployment[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
@@ -68,7 +68,7 @@ export function DeploymentsPanel({ projectId, canDeploy = true }: { projectId: s
       </div>
       {error && <p role="alert" className="db-error">{error}</p>}
       {!canDeploy && <p className="console-callout">Je kunt je project en code al beheren. Deployen voor klantaccounts wordt beschikbaar zodra builds op de server veilig afgescheiden draaien.</p>}
-      {items.length === 0 ? <div className="console-empty">Nog geen uitrol. Gebruik Opnieuw uitrollen om de branch te bouwen.</div> : (
+      {items.length === 0 ? <div className="console-empty">{canDeploy ? 'Nog geen uitrol. Gebruik Opnieuw uitrollen om de branch te bouwen.' : 'Nog geen uitrol. Nieuwe uitrollen verschijnen hier.'}</div> : (
         <ul className="deploy-list">
           {items.map(item => (
             <li key={item.id}>

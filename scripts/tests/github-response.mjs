@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {githubResponse} from '../../src/lib/github/response.mjs';
+import {canDeployProjects} from '../../src/lib/auth/owner.mjs';
+assert.equal(canDeployProjects({kind:'admin'}),true);
+assert.equal(canDeployProjects({kind:'customer',owner:true}),true);
+for(const identity of [null,{kind:'customer'},{kind:'customer',owner:false},{kind:'unknown',owner:true}]) assert.equal(canDeployProjects(identity),false);
+for(const status of [200,403,502,503]) await assert.rejects(githubResponse(new Response('<!DOCTYPE html><title>Unavailable</title>',{status,headers:{'content-type':'text/html'}})),/tijdelijk niet bereikbaar/);
+await assert.rejects(githubResponse(new Response('<html>',{status:401})),/sessie is verlopen/);
+await assert.rejects(githubResponse(new Response('',{status:429})),/Te veel aanvragen/);
+await assert.rejects(githubResponse(new Response('{broken',{headers:{'content-type':'application/json'}})),/kon niet worden gelezen/);
+await assert.rejects(githubResponse(Response.json({error:'Koppel GitHub opnieuw.'},{status:502})),/Koppel GitHub opnieuw/);
+assert.deepEqual(await githubResponse(Response.json({items:[],truncated:false})),{items:[],truncated:false});
+console.log('PASS: owner deployment access, customer restriction and recoverable JSON/HTML/network response handling');

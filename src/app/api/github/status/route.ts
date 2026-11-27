@@ -27,6 +27,7 @@ export async function GET() {
     } catch { connected = false; }
   }
   return NextResponse.json({
+    privateDeployReady: identity.kind === 'customer' && identity.owner === true && config?.privateDeployReady === true,
     configured: Boolean(config), connected, login, automatic, customer: identity.kind === 'customer',
     installUrl: config ? `https://github.com/apps/${config.appSlug}/installations/new` : null,
   }, { headers: { 'Cache-Control': 'no-store' } });

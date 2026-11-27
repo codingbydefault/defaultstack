@@ -29,7 +29,7 @@ const tabs = [
 
 export type ProjectTab = (typeof tabs)[number][0];
 
-export function ProjectScreen({ projectId, tab }: { projectId: string; tab: ProjectTab }) {
+export function ProjectScreen({ projectId, tab, canDeploy = false }: { projectId: string; tab: ProjectTab; canDeploy?: boolean }) {
   const [project, setProject] = useState<Project | null>(null);
   const [error, setError] = useState('');
 
@@ -62,7 +62,7 @@ export function ProjectScreen({ projectId, tab }: { projectId: string; tab: Proj
         ))}
       </div>
       {tab === 'overview' && <OverviewPanel project={project} />}
-      {tab === 'deployments' && <DeploymentsPanel projectId={project.id} canDeploy={project.owner.kind === 'team'} />}
+      {tab === 'deployments' && <DeploymentsPanel projectId={project.id} canDeploy={canDeploy} />}
       {tab === 'code' && <CodePanel projectId={project.id} repoUrl={project.repoUrl} />}
       {tab === 'logs' && <ProjectLogsPanel projectId={project.id} />}
       {tab === 'analytics' && <AnalyticsPanel projectId={project.id} />}
