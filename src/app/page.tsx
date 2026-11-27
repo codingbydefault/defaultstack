@@ -1,4 +1,8 @@
 import Link from 'next/link';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { publicDomain } from '@/lib/public-domain';
+import { EnglishHome } from '@/components/english-home';
 import { SiteFooter } from '@/components/site-footer';
 import { PublicAuthActions } from '@/components/public-auth-actions';
 import { ReviewsSection } from '@/components/reviews-section';
@@ -23,7 +27,11 @@ const milestones = [
   { title: 'Abonnementen via Stripe', detail: 'Pakketten en prijzen staan klaar. Afrekenen volgt na rechten en verbruiksmeting.', status: 'In voorbereiding' },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const request = await headers();
+  const domain = publicDomain(request.get('x-forwarded-host') ?? request.get('host'));
+  if (domain.kind === 'admin') redirect('/app');
+  if (domain.language === 'en') return <EnglishHome />;
   return (
     <main className="landing" lang="nl">
       <header className="nav wrap landing-nav">
