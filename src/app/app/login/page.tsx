@@ -21,13 +21,13 @@ function authNotice(result: string | undefined, error: string | undefined): stri
   if (code === 'github_unavailable') return 'GitHub-aanmelding is nog niet ingesteld.';
   if (code === 'state_mismatch' || code === 'state_not_found' || code === 'state_security_mismatch' || code === 'state_invalid') return 'De GitHub-aanmelding is verlopen of ongeldig. Probeer het opnieuw.';
   if (code === 'unable_to_get_user_info' || code === 'email_not_found' || code === 'email_not_verified' || code === 'no_email') return 'GitHub gaf geen geverifieerd primair e-mailadres. Aanmelden is gestopt.';
-  if (code === 'account_not_linked') return 'Dit e-mailadres hoort bij een account dat nog niet is bevestigd. Log in met je wachtwoord.';
+  if (code === 'account_not_linked') return 'Dit e-mailadres hoort bij een account dat nog niet is bevestigd. Neem contact op via codedbydefault@gmail.com.';
   if (code.startsWith('github') || code === 'oauth_code_verification_failed' || code === 'invalid_code' || code === 'no_code') return 'Aanmelden met GitHub is mislukt. Probeer het opnieuw.';
   return 'Aanmelden is mislukt. Probeer het opnieuw.';
 }
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; admin?: string; provider?: string; result?: string; error?: string; mode?: string }> }) {
-  const [{ next, admin, provider, result, error, mode }, jar] = await Promise.all([searchParams, cookies()]);
+  const [{ next, admin, result, error, mode }, jar] = await Promise.all([searchParams, cookies()]);
   const destination = safeNextPath(next);
   const notice = authNotice(result, error);
   if (admin === '1') {
@@ -47,7 +47,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       </Link>
       <div className="login-theme-control"><ThemeToggle /></div>
       {admin === '1' ? <LoginForm configured={passwordHashConfigured() && Boolean(sessionSecret())} nextPath={destination} /> :
-        <section className="login-card customer-login-card"><p className="console-eyebrow">DEFAULTSTACKR / WERKRUIMTE</p><h1>Welkom bij jouw stack.</h1><p>Log in of maak een account om je projecten te beheren.</p>{notice && <p role="alert" className="db-error">{notice}</p>}<CustomerAuthForm initialMode={mode === 'register' ? 'register' : 'login'} provider={provider} githubSignIn={githubSignInConfigured()} githubSignInHref={githubSignInHref()} /></section>}
+        <section className="login-card customer-login-card"><h1>{mode === 'register' ? 'Account aanmaken' : 'Welkom bij jouw stack.'}</h1><p>Log in of maak een account om je projecten te beheren.</p>{notice && <p role="alert" className="db-error">{notice}</p>}<CustomerAuthForm initialMode={mode === 'register' ? 'register' : 'login'} githubSignIn={githubSignInConfigured()} githubSignInHref={githubSignInHref()} /></section>}
     </main>
   );
 }

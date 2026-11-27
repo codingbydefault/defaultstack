@@ -287,5 +287,51 @@ main { overflow-x: clip; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .workbench-panel { animation: none; }
+  :is(.landing, .pricing-page, .legal-page, .login-shell) *, :is(.landing, .pricing-page, .legal-page, .login-shell) *::before, :is(.landing, .pricing-page, .legal-page, .login-shell) *::after { transition: none; animation: none; }
 }
+
+/* Public refinement: readable status, clear action hierarchy and touch inputs. */
+.landing-hero h1, .landing h2, .pricing-page .pricing-hero h1 { letter-spacing: -.035em; }
+.landing .brand small, .pricing-page .brand small, .legal-page .brand small { font-size: 11px; }
+.landing .milestone-badge { color: var(--color-ink-soft); background: var(--color-paper-soft); border-color: var(--color-rule); font-size: 12px; letter-spacing: 0; }
+.landing-progress-list article { grid-template-columns: minmax(0, 1fr) auto; padding: 24px; }
+.landing-flow-steps, .landing-progress-list { border-top: 0; display: grid; gap: var(--space-sm); }
+html .landing .landing-actions .outline, html .landing .landing-contact .outline { background: var(--color-paper); color: var(--color-ink); box-shadow: none; border-color: var(--color-rule); backdrop-filter: none; }
+html .landing .landing-actions .outline:hover, html .landing .landing-contact .outline:hover { background: var(--color-paper-soft); border-color: var(--color-focus); }
+.landing-pricing p { max-width: 70ch; font-size: 16px; line-height: 1.7; }
+.landing-pricing-note { font-size: 13px; line-height: 1.6; }
+.landing-contact::before { display: none; }
+.review-form-shell label { font-size: 14px; }
+.review-form-shell :is(input, textarea, select) { font: 400 16px/1.5 var(--font-body); min-height: 44px; caret-color: var(--color-focus); }
+.review-form-shell textarea { min-height: 130px; }
+.review-form-shell input::placeholder, .review-form-shell textarea::placeholder { color: var(--color-muted); opacity: 1; }
+.review-form-shell form > p { font-size: 13px; line-height: 1.65; }
+.customer-auth-form .auth-disclaimer { font-size: 13px; line-height: 1.7; }
+.auth-social-github > svg { flex: none; }
+.auth-social-github .auth-link-arrow { margin-inline-start: auto; }
+.auth-recovery p { color: var(--color-muted); line-height: 1.6; }
+.skip-link { position: absolute; inset: 12px auto auto 12px; z-index: 100; padding: 12px 18px; background: var(--color-paper); color: var(--color-ink); border: 2px solid var(--color-focus); border-radius: var(--radius-control); transform: translateY(-160%); }
+.skip-link:focus { transform: translateY(0); }
+:is(.landing, .pricing-page) section[id] { scroll-margin-block-start: 24px; }
+.pricing-page .pricing-notice { border: 1px solid var(--color-rule); border-radius: var(--radius-control); }
+.pricing-price { font-variant-numeric: tabular-nums; letter-spacing: -.035em; }
+@media (max-width: 700px) {
+  .landing-progress-list article { grid-template-columns: minmax(0, 1fr); gap: var(--space-sm); padding: 20px; }
+  .landing-progress-list .milestone-badge { grid-column: 1; justify-self: start; }
+}
+.footer-cookie-settings { display: block; width: fit-content; min-height: 44px; margin: 4px 0; padding: 6px 0; border: 0; background: transparent; color: var(--color-dark-muted); text-align: start; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+.cookie-dialog { width: min(560px, calc(100% - 32px)); max-height: 85dvh; overflow: auto; margin: auto; padding: 32px; border: 1px solid var(--color-rule); border-radius: var(--radius-panel); background: var(--color-paper); color: var(--color-ink); box-shadow: 0 20px 60px var(--color-shadow); }
+.cookie-dialog::backdrop { background: var(--color-backdrop); }
+.cookie-dialog h2 { margin-top: 0; color: var(--color-ink); font-size: 28px; }
+.site-footer .cookie-dialog p { color: var(--color-muted); font-size: 15px; line-height: 1.7; }
+.site-footer .cookie-dialog > a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 4px; }
+.cookie-dialog form { margin-top: 24px; }
+.cookie-table-scroll { overflow-x: auto; margin-block: 24px; }
+.cookie-table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.6; }
+.cookie-table :is(th, td) { text-align: start; vertical-align: top; padding: 14px 10px; border-bottom: 1px solid var(--color-rule); }
+.cookie-table td:first-child { min-width: 150px; max-width: 240px; overflow-wrap: anywhere; }
+.cookie-table code { font-size: 12px; }
+.pricing-tax-note { margin: 0 0 24px; color: var(--color-muted); max-width: 70ch; font-size: 14px; line-height: 1.7; }
+.footer-trust-badges span { display: inline-flex; align-items: center; gap: 6px; }
+.footer-trust-badges svg { flex: none; }

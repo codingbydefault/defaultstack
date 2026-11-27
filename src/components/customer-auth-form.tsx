@@ -2,79 +2,42 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { createAuthClient } from 'better-auth/react';
 
-const cloud = 'https://www.defaultstackr.cloud';
-const authClient = createAuthClient();
-type Availability = { available: boolean; github: boolean; google: boolean; githubSignIn?: boolean; githubSignInHref?: string | null };
+type Availability = { available: boolean; githubSignIn?: boolean; githubSignInHref?: string | null };
 
-export function CustomerAuthForm({ initialMode = 'login', provider, githubSignIn = false, githubSignInHref = '/api/auth/github' }: { initialMode?: 'login' | 'register'; provider?: string; githubSignIn?: boolean; githubSignInHref?: string }) {
-  const [mode, setMode] = useState(initialMode);
-  const [error, setError] = useState('');
-  const [availability, setAvailability] = useState<Availability | null>(null);
-  const [showGithub, setShowGithub] = useState(githubSignIn);
+export function CustomerAuthForm({ initialMode = 'login', githubSignIn = false, githubSignInHref = '/api/auth/github' }: { initialMode?: 'login' | 'register'; githubSignIn?: boolean; githubSignInHref?: string }) {
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(githubSignIn ? 'ready' : 'loading');
   const [githubHref, setGithubHref] = useState(githubSignInHref);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
+    if (githubSignIn) return;
     const controller = new AbortController();
-    fetch(`${cloud}/api/customer-entry/status`, { cache: 'no-store', signal: controller.signal })
+    setStatus('loading');
+    fetch('https://defaultstackr.cloud/api/customer-entry/status', { cache: 'no-store', signal: controller.signal })
       .then(async response => {
         if (!response.ok) throw new Error('unavailable');
-        return response.json() as Promise<Availability>;
+        const body = await response.json() as Availability;
+        const href = new URL(body.githubSignInHref || '', 'https://defaultstackr.cloud');
+        if (!body.available || !body.githubSignIn || href.origin !== 'https://defaultstackr.cloud' || href.pathname !== '/api/auth/github') throw new Error('unavailable');
+        setGithubHref(href.href);
+        setStatus('ready');
       })
-      .then(body => {
-        setAvailability(body);
-        if (!githubSignIn && body.githubSignIn && body.githubSignInHref) {
-          setShowGithub(true);
-          setGithubHref(body.githubSignInHref);
-        }
-      })
-      .catch(() => { if (!controller.signal.aborted) setAvailability({ available: false, github: false, google: false }); });
+      .catch(() => { if (!controller.signal.aborted) setStatus('error'); });
     return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    if (githubSignIn) return undefined;
-    const controller = new AbortController();
-    fetch('/api/customer-entry/status', { cache: 'no-store', signal: controller.signal })
-      .then(async response => response.ok ? response.json() as Promise<Availability> : null)
-      .then(body => {
-        if (body?.githubSignIn && body.githubSignInHref) {
-          setShowGithub(true);
-          setGithubHref(body.githubSignInHref);
-        }
-      })
-      .catch(() => {});
-    return () => controller.abort();
-  }, [githubSignIn]);
-
-  useEffect(() => {
-    if (provider !== 'github' && provider !== 'google') return;
-    if (window.location.origin !== cloud && !window.location.hostname.startsWith('localhost')) return;
-    void authClient.signIn.social({ provider, callbackURL: '/app' }).then(result => {
-      if (result.error) setError('Aanmelden met deze aanbieder is nog niet beschikbaar.');
-    }).catch(() => setError('Aanmelden met deze aanbieder is mislukt.'));
-  }, [provider]);
+  }, [githubSignIn, attempt]);
 
   return <div className="customer-auth-form">
-    {availability && !availability.available && <p role="status" className="auth-availability">Klantaanmelding wordt nog ingesteld op de server. Probeer het later opnieuw.</p>}
-    <div className="auth-social-list">
-      {/* Anchor, not a form. A form whose response redirects to GitHub is blocked when form-action is 'self'. */}
-      {showGithub && <a className="auth-social auth-social-github" href={githubHref}><span aria-hidden="true">⌘</span>Inloggen met GitHub <b aria-hidden="true">↗</b></a>}
-      <form action={`${cloud}/api/customer-entry/social`} method="post"><input type="hidden" name="provider" value="github" /><button type="submit" disabled={!availability?.github} className="auth-social auth-social-github"><span aria-hidden="true">⌘</span>Verder met GitHub <b aria-hidden="true">↗</b></button></form>
-      <form action={`${cloud}/api/customer-entry/social`} method="post"><input type="hidden" name="provider" value="google" /><button type="submit" disabled={!availability?.google} className="auth-social auth-social-google"><span aria-hidden="true">G</span>Verder met Google <b aria-hidden="true">↗</b></button></form>
-    </div>
-    {availability?.available && !availability.github && <p className="auth-availability">GitHub-aanmelding is nog niet gekoppeld door de beheerder.</p>}
-    <div className="auth-divider"><span>OF MET E-MAIL</span></div>
-    <form action={`${cloud}/api/customer-entry`} method="post">
-      <input type="hidden" name="mode" value={mode} />
-      <label>E-mailadres<input name="email" type="email" autoComplete="email" required maxLength={254} placeholder="jij@bedrijf.nl" /></label>
-      <label>Wachtwoord<input name="password" type="password" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} required minLength={10} maxLength={200} placeholder="Minstens 10 tekens" /></label>
-      <button type="submit" className="primary" disabled={!availability?.available}>{mode === 'register' ? 'Account aanmaken' : 'Inloggen met e-mail'} <span aria-hidden="true">↗</span></button>
-    </form>
-    {error && <p role="alert" className="db-error">{error}</p>}
-    <p className="auth-switch">{mode === 'login' ? 'Nog geen account?' : 'Heb je al een account?'} <button type="button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? 'Account aanmaken' : 'Inloggen'}</button></p>
-    <p className="auth-disclaimer">GitHub is de standaard voor projecten. Met Google of e-mail kun je later GitHub aan je profiel koppelen.</p>
+    {status === 'ready' && <div className="auth-social-list">
+      <a className="auth-social auth-social-github" href={githubHref}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 19c-4.3 1.3-4.3-2.2-6-2.7m12 5v-3.4a3 3 0 0 0-.8-2.3c2.7-.3 5.6-1.3 5.6-6A4.7 4.7 0 0 0 18.5 6a4.3 4.3 0 0 0-.1-3.5S17.3 2.2 15 3.8a12 12 0 0 0-6 0C6.7 2.2 5.6 2.5 5.6 2.5A4.3 4.3 0 0 0 5.5 6a4.7 4.7 0 0 0-1.3 3.6c0 4.7 2.9 5.7 5.6 6A3 3 0 0 0 9 18v3.3" /></svg>
+        {initialMode === 'register' ? 'Account aanmaken met GitHub' : 'Inloggen met GitHub'}
+        <svg className="auth-link-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+      </a>
+      <p className="auth-disclaimer">{initialMode === 'register' ? 'Je maakt je profiel aan met je GitHub-account.' : 'Gebruik je GitHub-account om je projecten te beheren.'}</p>
+    </div>}
+    {status === 'loading' && <p role="status" className="auth-availability">GitHub-aanmelding laden…</p>}
+    {status === 'error' && <div className="auth-recovery"><p role="status">GitHub-aanmelding is tijdelijk niet beschikbaar. Probeer het opnieuw.</p><button type="button" className="outline" onClick={() => setAttempt(value => value + 1)}>Opnieuw proberen</button></div>}
     <p className="auth-disclaimer">Bekijk vóór het aanmaken van een account onze <Link href="/voorwaarden">algemene voorwaarden</Link> en <Link href="/privacy">privacyverklaring</Link>.</p>
   </div>;
 }

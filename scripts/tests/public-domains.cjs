@@ -37,7 +37,7 @@ async function freePort() {
     for (const host of HOSTS) {
       const en = host.endsWith('.online');
       const language = en ? 'en' : 'nl';
-      const pages = ['/', '/prijzen', '/pricing', '/privacy', '/voorwaarden', '/terms'];
+      const pages = ['/', '/prijzen', '/pricing', '/privacy', '/voorwaarden', '/terms', '/cookies'];
       for (const path of pages) {
         const result = await local(host, path);
         assert.equal(result.status, 200, `${host}${path}`);
@@ -107,16 +107,38 @@ async function freePort() {
             await page.locator('.responsive-nav > summary').click();
             assert.equal(await page.locator('.responsive-nav nav').isVisible(), true);
             assert.equal(await page.locator('.responsive-nav select').inputValue(), en ? 'en' : 'nl');
+            await page.keyboard.press('Escape');
+            assert.equal(await page.locator('.responsive-nav nav').isVisible(), false);
+            assert.equal(await page.locator('.responsive-nav > summary').evaluate(element => element === document.activeElement), true);
           }
           await page.screenshot({ path: `/tmp/defaultstackr-${en ? 'en' : 'nl'}-${width}.png`, fullPage: true });
         }
       }
       await page.goto(`http://defaultstackr.online:${port}/pricing`,{waitUntil:'networkidle'});
       await page.getByRole('button',{name:/Yearly/}).click();
-      assert((await page.locator('.pricing-card.pro').innerText()).includes('290'));
+      assert((await page.locator('.pricing-card.pro').innerText()).includes('350.90'));
       await page.getByLabel('Active projects',{exact:true}).fill('12');
       await page.getByLabel('Database storage (GB)',{exact:true}).fill('6');
-      assert((await page.locator('.business-calculator > strong').innerText()).includes('12'));
+      assert((await page.locator('.business-calculator > strong').innerText()).includes('14.52'));
+      await page.route('https://defaultstackr.cloud/api/customer-entry/status', route => route.fulfill({status:200, contentType:'application/json', headers:{'Access-Control-Allow-Origin':'*'}, body:JSON.stringify({available:true, githubSignIn:true, githubSignInHref:'https://defaultstackr.cloud/api/auth/github'})}));
+      await page.goto(`http://defaultstackr.nl:${port}/`, { waitUntil:'networkidle' });
+      await page.getByRole('button',{name:'Aanmelden',exact:true}).click();
+      const authDialog = page.locator('dialog.auth-dialog[open]');
+      await authDialog.getByRole('link',{name:'Inloggen met GitHub',exact:true}).waitFor();
+      assert.equal(await authDialog.locator('input').count(),0, 'no email or password fields');
+      assert.equal(await authDialog.getByRole('button',{name:/Google|Verder met GitHub/}).count(),0,'no inactive provider buttons');
+      await page.keyboard.press('Escape');
+      await page.getByRole('button',{name:'Cookie-instellingen',exact:true}).click();
+      assert.equal(await page.getByRole('dialog',{name:'Cookies en lokale opslag'}).isVisible(),true);
+      await page.keyboard.press('Escape');
+      assert.equal(await page.getByRole('button',{name:'Cookie-instellingen',exact:true}).evaluate(e => e === document.activeElement),true);
+      for(const theme of ['light','dark']) {
+        await page.evaluate(theme => document.documentElement.dataset.theme=theme, theme);
+        const badge = await page.locator('.milestone-badge').first().evaluate(e=>{const s=getComputedStyle(e);return {fg:s.color,bg:s.backgroundColor};});
+        const lum = value => {const rgb=value.match(/[0-9.]+/g).slice(0,3).map(v=>{v=Number(v)/255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
+        const f=lum(badge.fg),b=lum(badge.bg);assert((Math.max(f,b)+.05)/(Math.min(f,b)+.05)>=4.5, 'readable status in '+theme);
+      }
+      console.log('PASS: GitHub-only sign-in, cookie information dialog, mobile Escape and status contrast in both themes');
       console.log('PASS: real Chromium, both languages, matching layouts, mobile menus, keyboard tabs and pricing calculator');
     }
     fs.writeFileSync('/tmp/defaultstackr-public-links.json',JSON.stringify({checkedNavigation:[...visited],footer:PARTNERS},null,2));

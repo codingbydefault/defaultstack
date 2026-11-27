@@ -71,7 +71,10 @@ try {
 
   const customerLogin = await fetch(`${base}/app/login?provider=github`, { headers: { cookie }, redirect: 'manual' });
   assert.equal(customerLogin.status, 200, 'an admin session must not intercept customer login');
-  assert.match(await customerLogin.text(), /Verder met GitHub/);
+  const customerHtml = await customerLogin.text();
+  assert.match(customerHtml, /GitHub-aanmelding laden/);
+  assert.doesNotMatch(customerHtml, /Verder met Google|Verder met GitHub|OF MET E-MAIL/);
+  assert.doesNotMatch(customerHtml, /name="(?:email|password)"/);
   assert.doesNotMatch(await (await fetch(`${base}/app/login`)).text(), /Inloggen met GitHub/);
   const githubStart = await fetch(`${base}/api/auth/github`, { headers: { Accept: 'application/json' }, redirect: 'manual' });
   assert.equal(githubStart.status, 503);

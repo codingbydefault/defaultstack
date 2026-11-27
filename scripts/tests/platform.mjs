@@ -46,7 +46,7 @@ try {
   assert.match(csp, /default-src 'self'/);
   assert.match(csp, /frame-ancestors 'self'/);
   assert.match(csp, /object-src 'none'/);
-  assert.match(csp, /form-action 'self' https:\/\/www\.defaultstackr\.cloud/);
+  assert.match(csp, /form-action 'self' [^;]*https:\/\/www\.defaultstackr\.cloud/);
   assert.match(csp, /connect-src 'self' https:\/\/www\.defaultstackr\.cloud/);
   assert.equal(homeResponse.headers.get('strict-transport-security'), null);
   assert.equal(homeResponse.headers.get('x-powered-by'), null);

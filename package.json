@@ -9,7 +9,7 @@
     "start": "node scripts/start-standalone.mjs",
     "start:next": "next start -H 127.0.0.1 -p 3100",
     "lint": "tsc --noEmit --pretty false",
-    "test": "node scripts/tests/github-login.mjs && node scripts/tests/platform.mjs && node scripts/tests/dashboard.mjs && node scripts/tests/database-editor.mjs",
+    "test": "node scripts/tests/github-login.mjs && node scripts/tests/github-setup.mjs && node scripts/tests/platform.mjs && node scripts/tests/dashboard.mjs && node scripts/tests/database-editor.mjs",
     "auth:migrate": "node scripts/migrate-customer-auth.mjs"
   },
   "engines": {

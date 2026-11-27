@@ -10,7 +10,7 @@ export function LandingWorkbench({ language = 'nl' }: { language?: 'nl' | 'en' }
     { id: 'code', label: 'Code' }, { id: 'data', label: 'Database' }, { id: 'deploy', label: text('Uitrollen','Deployments') },
   ];
   return <div className="landing-workbench" aria-label={text('Interactieve voorbeeldweergave van de werkruimte','Interactive workspace preview')}>
-    <div className="workbench-header"><div><span className="workbench-mark" aria-hidden="true">◈</span><strong>{text('Jouw werkruimte','Your workspace')}</strong><small>{text('Interactief voorbeeld','Interactive example')}</small></div><span className="workbench-project">studio-project</span></div>
+    <div className="workbench-header"><div><span className="workbench-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" /></svg></span><strong>{text('Jouw werkruimte','Your workspace')}</strong><small>{text('Interactief voorbeeld','Interactive example')}</small></div><span className="workbench-project">studio-project</span></div>
     <div className="workbench-tabs" role="tablist" aria-label={text('Voorbeeldonderdelen','Preview sections')}>
       {views.map((item,index) => <button key={item.id} type="button" role="tab" tabIndex={view === item.id ? 0 : -1} aria-selected={view === item.id} aria-controls="workbench-panel" id={`workbench-${item.id}`} onClick={() => setView(item.id)} onKeyDown={event => {
         let next = index;
